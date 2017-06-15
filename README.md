@@ -2,25 +2,28 @@
 
 ## Table of Contents
 
-* [Description](# Description)
-* [Installation](# Installation)
-* [Usage](# Usage)
-* [Contact Information](# Contact Information)
-* [Licence Information](# Licence Information)
+* [Description](#description)
+* [Installation](#installation)
+* [Usage](#usage)
+* [Contact Information](#contact-information)
+* [License Information](#license-information)
 
 ## Description
 
 The FunParTools Matlab toolbox is part of the TensCalc Matlab toolbox
 but is useful on its own right. It provides functions to
 
-1. declare 'named' inputs to a matlab function of the form:
-	f('variable 1',value 1,'variable 2',value 2, ...)
+1. declare `named` inputs to a matlab function in the form:
+
+	```matlab
+	f('variable 1',value1,'variable 2',value2, ...)
+	```
 
 2. set default values for inputs not provided (optional)
 
 3. test if the input values fall within admissible sets (optional)
 
-4. automatically generate 'help' from declared inputs
+4. automatically generate documentation from declared inputs
 
 5. automatically saving output/input values to files with an
    accompanying "pedigree" file that described the parameters used to
@@ -50,91 +53,91 @@ This toolbox is mostly useful when
 2. Add `funpartools/lib` to your matlab path. 
    From inside the folder `funpartools/lib`, this can be done with
 
-	``` matlab
+	```matlab
 	addpath(fileparts(which('declareParameter')));
 	savepath
 	```
 
 3. To test if all is well, go to `funpartools/examples` and execute
 
-	``` matlab
+	```matlab
 	createMatrix help
 	testFlow
 	```
-	
+
 ## Usage
 
 Matlab functions that use FunParTools take the following general form:
 
-	``` matlab
-        function [varargout]=functionName(varargin)
-        % For help on the input parameters type 'functionName Help'
+```matlab
+function [varargout]=functionName(varargin)
+% For help on the input parameters type 'functionName Help'
     
-          % Function global help
-          declareParameter(...
-              'Help', { '...' })
+  % Function global help
+  declareParameter(...
+    'Help', { '...' })
     
-          % Declare all input parameters, see 'help declareParameter'
-          declareParameter( .... );
+  % Declare all input parameters, see 'help declareParameter'
+  declareParameter( .... );
     
-          % Declare all output parameters, see 'help declareOutput'
-          declareOutput( .... );
+  % Declare all output parameters, see 'help declareOutput'
+  declareOutput( .... );
     
-          % Retrieve parameters and inputs
-          [stopNow,params]=setParameters(nargout,varargin);
-          if stopNow
-             return;
-          end
+  % Retrieve parameters and inputs
+  [stopNow,params]=setParameters(nargout,varargin);
+  if stopNow
+    return;
+  end
     
-          % Start main code here
+  % Start main code here
     
-            ....
+  ....
     
-          % Set outputs
-          vargout=setOutputs(nargout,params);
+  % Set outputs
+  vargout=setOutputs(nargout,params);
     
-        end
-        ```
+end
+```
 
 This function is then called using the syntax:
 
-    ``` matlab
-    [output1,output2,...]=functionName('input1',value1,'input2',value2,...);
-    ```
+``` matlab
+[output1,output2,...]=functionName('input1',value1,'input2',value2,...);
+```
 
 The function's documentation can be obtained using the following syntax:
 
-    ``` matlab
-    functionName help
-    ```
+``` matlab
+functionName help
+```
 
 The function's latex-formated documentation can be obtained using the
 following syntax. This also produces a file with the latex-formated
 documentation with the same name as the function, but with the
 extension .tex (instead of .m).
 
-    ``` matlab
-    createGateway help latex
-    ```
+``` matlab
+createGateway help latex
+```
 
 FunParTools contains its own documentation embedded into the matlab
 scripts. To see it, type at the matlab prompt:
 
-    ``` matlab
-    help setParameters
-    help declareParameter
-    help declareOutput
-    ```
+``` matlab
+help setParameters
+help declareParameter
+help declareOutput
+```
 
 ## Contact Information
 
-Joao Hespanha
-hespanha@ucsb.edu
+Joao Hespanha (hespanha@ucsb.edu)
 
 http://www.ece.ucsb.edu/~hespanha
+
 University of California, Santa Barbara
 	
-## Licence Information
+## License Information
 
 Copyright 2010-2017 Joao Hespanha
 

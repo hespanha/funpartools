@@ -29,7 +29,7 @@ function [stopNow,parameters]=setParameters(nargout,list_)
 %
 %     % Declare all output parameters, see 'help declareOutput'
 %     declareOutput( .... );
-
+%
 %     % Retrieve parameters and inputs
 %     [stopNow,params]=setParameters(nargout,varargin);
 %     if stopNow

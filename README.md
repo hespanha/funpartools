@@ -67,45 +67,45 @@ This toolbox is mostly useful when
 Matlab functions that use FunParTools take the following general form:
 
 	``` matlab
-    function [varargout]=functionName(varargin)
-    % For help on the input parameters type 'functionName Help'
+        function [varargout]=functionName(varargin)
+        % For help on the input parameters type 'functionName Help'
     
-      % Function global help
-      declareParameter(...
-          'Help', { '...' })
+          % Function global help
+          declareParameter(...
+              'Help', { '...' })
     
-      % Declare all input parameters, see 'help declareParameter'
-      declareParameter( .... );
+          % Declare all input parameters, see 'help declareParameter'
+          declareParameter( .... );
     
-      % Declare all output parameters, see 'help declareOutput'
-      declareOutput( .... );
+          % Declare all output parameters, see 'help declareOutput'
+          declareOutput( .... );
     
-      % Retrieve parameters and inputs
-      [stopNow,params]=setParameters(nargout,varargin);
-      if stopNow
-         return;
-      end
+          % Retrieve parameters and inputs
+          [stopNow,params]=setParameters(nargout,varargin);
+          if stopNow
+             return;
+          end
     
-      % Start main code here
+          % Start main code here
     
-        ....
+            ....
     
-      % Set outputs
-      vargout=setOutputs(nargout,params);
+          % Set outputs
+          vargout=setOutputs(nargout,params);
     
-    end
-    ```
+        end
+        ```
 
 This function is then called using the syntax:
 
     ``` matlab
-    	[output1,output2,...]=functionName('input1',value1,'input2',value2,...);
+    [output1,output2,...]=functionName('input1',value1,'input2',value2,...);
     ```
 
 The function's documentation can be obtained using the following syntax:
 
     ``` matlab
-    	functionName help
+    functionName help
     ```
 
 The function's latex-formated documentation can be obtained using the
@@ -114,7 +114,7 @@ documentation with the same name as the function, but with the
 extension .tex (instead of .m).
 
     ``` matlab
-    	createGateway help latex
+    createGateway help latex
     ```
 
 FunParTools contains its own documentation embedded into the matlab

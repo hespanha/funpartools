@@ -2,7 +2,7 @@
 
 ## Table of Contents
 
-* [Description][(# Description)
+* [Description](# Description)
 * [Installation](# Installation)
 * [Usage](# Usage)
 * [Contact Information](# Contact Information)
@@ -50,10 +50,10 @@ This toolbox is mostly useful when
 2. Add `funpartools/lib` to your matlab path. 
    From inside the folder `funpartools/lib`, this can be done with
 
-  ``` matlab
-  addpath(fileparts(which('declareParameter')));
-  savepath
-  ```
+	``` matlab
+	addpath(fileparts(which('declareParameter')));
+	savepath
+	```
 
 3. To test if all is well, go to `funpartools/examples` and execute
 
@@ -66,65 +66,65 @@ This toolbox is mostly useful when
 
 Matlab functions that use FunParTools take the following general form:
 
-``` matlab
-function [varargout]=functionName(varargin)
-% For help on the input parameters type 'functionName Help'
-
-  % Function global help
-  declareParameter(...
-      'Help', { '...' })
-
-  % Declare all input parameters, see 'help declareParameter'
-  declareParameter( .... );
-
-  % Declare all output parameters, see 'help declareOutput'
-  declareOutput( .... );
-
-  % Retrieve parameters and inputs
-  [stopNow,params]=setParameters(nargout,varargin);
-  if stopNow
-     return;
-  end
-
-  % Start main code here
-
-    ....
-
-  % Set outputs
-  vargout=setOutputs(nargout,params);
-
-end
-```
+	``` matlab
+    function [varargout]=functionName(varargin)
+    % For help on the input parameters type 'functionName Help'
+    
+      % Function global help
+      declareParameter(...
+          'Help', { '...' })
+    
+      % Declare all input parameters, see 'help declareParameter'
+      declareParameter( .... );
+    
+      % Declare all output parameters, see 'help declareOutput'
+      declareOutput( .... );
+    
+      % Retrieve parameters and inputs
+      [stopNow,params]=setParameters(nargout,varargin);
+      if stopNow
+         return;
+      end
+    
+      % Start main code here
+    
+        ....
+    
+      % Set outputs
+      vargout=setOutputs(nargout,params);
+    
+    end
+    ```
 
 This function is then called using the syntax:
 
-``` matlab
-	[output1,output2,...]=functionName('input1',value1,'input2',value2,...);
-```
+    ``` matlab
+    	[output1,output2,...]=functionName('input1',value1,'input2',value2,...);
+    ```
 
 The function's documentation can be obtained using the following syntax:
 
-``` matlab
-	functionName help
-```
+    ``` matlab
+    	functionName help
+    ```
 
 The function's latex-formated documentation can be obtained using the
 following syntax. This also produces a file with the latex-formated
 documentation with the same name as the function, but with the
 extension .tex (instead of .m).
 
-``` matlab
-	createGateway help latex
-```
+    ``` matlab
+    	createGateway help latex
+    ```
 
 FunParTools contains its own documentation embedded into the matlab
 scripts. To see it, type at the matlab prompt:
 
-``` matlab
-help setParameters
-help declareParameter
-help declareOutput
-```
+    ``` matlab
+    help setParameters
+    help declareParameter
+    help declareOutput
+    ```
 
 ## Contact Information
 

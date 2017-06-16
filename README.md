@@ -47,7 +47,7 @@ This toolbox is mostly useful when
 
 ## Installation
 
-1. Download the *FunParTools* using one of the following options
+1. Download *FunParTools* using one of the following options
 
 	1. downloading it as a zip file from
 		https://github.ucsb.edu/hespanha/funpartools/archive/master.zip

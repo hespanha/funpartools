@@ -11,7 +11,7 @@
 
 ## Description
 
-The *FunParTools* Matlab toolbox is part of the *TensCalc* Matlab
+The *FunParTools* *Matlab* toolbox is part of the *TensCalc* *Matlab*
 toolbox but is useful on its own right. It provides functions to
 
 1. declare *named* inputs to a matlab function in the form:
@@ -69,8 +69,8 @@ This toolbox is mostly useful when
 
 	After this, you should have at least the following folders:
 
-	* funpartools/lib
-    * funpartools/examples
+	* `funpartools/lib`
+    * `funpartools/examples`
 
 2. Add `funpartools/lib` to your matlab path. 
    From inside the folder `funpartools/lib`, this can be done with
@@ -89,7 +89,7 @@ This toolbox is mostly useful when
 
 ## Usage
 
-Matlab functions that use *FunParTools* take the following general form:
+*Matlab* functions that use *FunParTools* take the following general form:
 
 ```matlab
 function [varargout]=functionName(varargin)

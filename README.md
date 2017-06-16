@@ -50,17 +50,17 @@ This toolbox is mostly useful when
 1. Download *FunParTools* using one of the following options
 
 	1. downloading it as a zip file from
-		https://github.ucsb.edu/hespanha/funpartools/archive/master.zip
+		https://github.com/hespanha/funpartools/archive/master.zip
  	   and unziping to an appropriate location
 
 	2. cloning this repository with Git, e.g., using the shell command
 	   ```sh
-	   svn checkout https://github.ucsb.edu/hespanha/funpartools.git
+	   svn checkout https://github.com/hespanha/funpartools.git
 	   ```
 	  
 	3. checking out this repository with svn, e.g., using the shell command
 	   ```sh
-       git clone https://github.ucsb.edu/hespanha/funpartools.git
+       git clone https://github.com/hespanha/funpartools.git
        ```
 
 	The latter two options are recommended because you can
@@ -161,7 +161,7 @@ error messages when things go wrong.
 
 ## Contact Information
 
-Joao Hespanha (hespanha@ucsb.edu)
+Joao Hespanha (hespanha@ece.ucsb.edu)
 
 http://www.ece.ucsb.edu/~hespanha
 

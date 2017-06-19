@@ -14,7 +14,7 @@
 The *FunParTools* *Matlab* toolbox is part of the *TensCalc* *Matlab*
 toolbox but is useful on its own right. It provides functions to
 
-1. declare *named* inputs to a matlab function in the form:
+1. declare *named* inputs to a *Matlab* function in the form:
 
 	```matlab
 	f('variable 1',value1,'variable 2',value2, ...)
@@ -69,15 +69,14 @@ This toolbox is mostly useful when
 
 	After this, you should have at least the following folders:
 
+	* `funpartools`
 	* `funpartools/lib`
     * `funpartools/examples`
 
-2. Add `funpartools/lib` to your matlab path. 
-   From inside the folder `funpartools/lib`, this can be done with
+2. Enter `funpartools` and execute the following command at the *Matlab* prompt:
 
 	```matlab
-	addpath(fileparts(which('declareParameter')));
-	savepath
+	install_funpartools
 	```
 
 3. To test if all is well, go to `funpartools/examples` and execute
@@ -142,8 +141,8 @@ extension .tex (instead of .m).
 createGateway help latex
 ```
 
-*FunParTools* contains its own documentation embedded into the matlab
-scripts. To see it, type at the matlab prompt:
+*FunParTools* contains its own documentation embedded into the *Matlab*
+scripts. To see it, type at the *Matlab* prompt:
 
 ``` matlab
 help setParameters

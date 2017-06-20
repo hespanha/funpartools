@@ -1,15 +1,18 @@
-
-fprintf('Seeting up path...');
+fprintf('Seeting up path...\n');
 home=[fileparts(which('install_funpartools')),'/lib'];
 folders={home;[home,'/serialization']};
       
-fprintf('removing old...');
-s = warning('OFF', 'MATLAB:rmpath:DirNotFound');
-rmpath(folders{:});
-warning(s);
+s=path;
+old=regexp(s,'[^:]*funpartools[^:]*','match');
+if ~isempty(old)
+    fprintf('removing from path:\n');
+    disp(old')
+    rmpath(old{:})
+end
 
-fprintf('adding new...');
+fprintf('adding to path:\n');
 addpath(folders{:});
+disp(folders)
 
 fprintf('saving path...');
 try

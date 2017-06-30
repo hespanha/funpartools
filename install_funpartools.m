@@ -3,7 +3,7 @@ home=[fileparts(which('install_funpartools')),'/lib'];
 folders={home;[home,'/serialization']};
       
 s=path;
-old=regexp(s,'[^:]*funpartools[^:]*','match');
+old=regexp(s,'[^:]*(funpartools.lib.serialization|funpartools.lib.)[^/:]*','match');
 if ~isempty(old)
     fprintf('removing from path:\n');
     disp(old')

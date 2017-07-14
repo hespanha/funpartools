@@ -475,6 +475,9 @@ if evalin('caller','exist(''executeScript'',''var'')')
             vargout={};
             k=1;
             for i_=1:length(callerVariables)
+                if k>nargout
+                    break;
+                end
                 if strcmp(callerVariables{i_}.type,'output')
                     filename=sprintf('%s+%s.mat',className,callerVariables{i_}.VariableName);
                     [vargout{k},fileExists]=outputWithPedigree(...
@@ -487,7 +490,7 @@ if evalin('caller','exist(''executeScript'',''var'')')
                     end
                 end
             end
-            if nargout~=length(vargout)
+            if nargout>length(vargout)
                 error('setParameters: %d outputs declared, but function was called with %d outputs\n',length(vargout),nargout);
             end
             assignin('caller','varargout',vargout);

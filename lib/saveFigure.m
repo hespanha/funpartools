@@ -215,6 +215,7 @@ for i=1:length(figureNumber)
         thisname=regexprep(thisname,'[ /,:]','_');
         thisname=regexprep(thisname,'[\[\(]','{');
         thisname=regexprep(thisname,'[\]\)]','}');
+        thisname=regexprep(thisname,'[.]','_');
     else
         thisname=filename;
     end

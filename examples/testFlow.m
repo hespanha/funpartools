@@ -44,4 +44,4 @@ C=sumMatrices('pedigreeClass','03sumAB','executeScript','asneeded',...
               'inputMatrix1',A,'inputMatrix2',B);
 
 disp('4) Erasing results')
-!rm -f *+TS=*.*
+delete *+TS=*.*

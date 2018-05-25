@@ -65,7 +65,8 @@ This toolbox is mostly useful when
 
 	The latter two options are recommended because you can
     subsequently use `svn update` or `git pull` to upgrade
-    *FunParTools* to the latest version.
+    *FunParTools* to the latest version. Under Windows 10, we use the
+    following git client: https://git-scm.com/download/win
 
 	After this, you should have at least the following folders:
 

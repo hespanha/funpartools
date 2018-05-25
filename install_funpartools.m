@@ -1,4 +1,4 @@
-fprintf('Seeting up path...\n');
+fprintf('Seeting up path:\n');
 home=[fileparts(which('install_funpartools')),'/lib'];
 folders={home;[home,'/serialization']};
       
@@ -9,16 +9,16 @@ else
     old=regexp(s,'[^:]*(funpartools.lib.serialization|funpartools.lib.)[^/:]*','match');
 end
 if ~isempty(old)
-    fprintf('removing from path:\n');
+    fprintf('  removing from path:\n');
     disp(old')
     rmpath(old{:})
 end
 
-fprintf('adding to path:\n');
+fprintf('  adding to path:\n');
 addpath(folders{:});
 disp(folders)
 
-fprintf('saving path...');
+fprintf('  saving path...');
 try
     savepath;
 catch me
@@ -26,5 +26,4 @@ catch me
     disp(folders)
     rethrow(me)
 end
-
-fprintf('done!\n');
+fprintf('done with path!\n');

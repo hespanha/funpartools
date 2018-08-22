@@ -104,7 +104,11 @@ function declareParameter(varargin)
 verboseLevel=0;
 
 callerName=dbstack(1);
-callerName=callerName(1).name;
+if length(callerName)>=1
+    callerName=callerName(1).name;
+else
+    callerName='command line';
+end
 
 %% Get localVariables_ from caller's workspace
 

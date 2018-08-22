@@ -43,7 +43,7 @@ callerVariables{3,1}.type='parameter';
 callerVariables{3,1}.VariableName='pedigreeClass';
 callerVariables{3,1}.DefaultValue='';
 callerVariables{3,1}.Description={
-    'When nonempty, the function outputs are saved to a file set.'
+    'When nonempty, the function outputs are saved to a set of files.'
     'All files in the set will be characterized by a ''pedigree'','
     'which decribes all the input parameters that were used in the script.'
     'This variable contains the name of the file class and may include a path.'

@@ -43,6 +43,7 @@ function m = hlp_serialize(v)
 %                                adapted from serialize.m
 %                                (C) 2010 Tim Hutt
 % Added support for tables & categorical by JPH on 11/2/1013
+% Added support for datetime by JPH on 9/30/1018
 
 % dispatch according to type
     if isnumeric(v) 
@@ -61,6 +62,8 @@ function m = hlp_serialize(v)
         m = serialize_table(v);
     elseif iscategorical(v)
         m = serialize_categorical(v);
+    elseif isdatetime(v)
+        m = serialize_datetime(v);
     elseif isobject(v)
         m = serialize_object(v);
     elseif isjava(v)
@@ -260,7 +263,7 @@ function m = serialize_table(v)
     % s=warning('off','MATLAB:structOnObject');
     % v=struct(v);
     % warning(s);
-    m = [uint8(135); serialize_struct(v.Properties)];
+    m = [uint8(135); serialize_struct(struct(v.Properties))];
     for i=1:size(v,2)
         %fprintf('serialize table variable ''%s''\n',v.Properties.VariableNames{i});
         %disp((v.(i))
@@ -277,6 +280,14 @@ function m = serialize_categorical(v)
     m = [uint8(136); hlp_serialize(v.categoryNames); hlp_serialize(v.codes); ];
 end
 
+% Object / class
+function m = serialize_datetime(v)
+    % s=warning('off','MATLAB:structOnObject');
+    % v=struct(v);
+    % warning(s);
+    n=convertTo(v,'posixtime');
+    m = [uint8(137); serialize_numeric(n)];
+end
 
 % Function handle
 function m = serialize_handle(v)    

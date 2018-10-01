@@ -60,6 +60,8 @@ switch m(pos)
         [v,pos] = deserialize_table(m,pos);
     case 136
         [v,pos] = deserialize_categorical(m,pos);
+    case 137
+        [v,pos] = deserialize_datetime(m,pos);
     otherwise
         error('Unknown class');
 end
@@ -345,7 +347,7 @@ v=table();
 for i=1:length(props.VariableNames)
     [d,pos] = deserialize_value(m,pos);
     %fprintf('deserialize table variable ''%s''\n',props.VariableNames{i});
-    %disp(d)
+    %%disp(d)
     v.(props.VariableNames{i})=d;
 end
 v.Properties=props;
@@ -359,6 +361,16 @@ pos = pos + 1;
 % Get codes
 [codes,pos] = deserialize_value(m,pos);
 v=categorical(cats(codes));
+
+end
+
+% datetime
+function [v,pos] = deserialize_datetime(m,pos)
+pos = pos + 1;
+% Get datetime
+[n,pos] = deserialize_numeric_simple(m,pos);
+% Get codes
+v=datetime(n,'ConvertFrom','posixtime');
 
 end
 

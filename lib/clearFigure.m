@@ -159,7 +159,7 @@ if figureNumber>0
         figure(figureNumber);
     end
 else
-    figureNumber=gcf;
+    figureNumber=gcf.Number;
 end
 
 if ~isempty(figureName)

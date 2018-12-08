@@ -53,12 +53,12 @@ This toolbox is mostly useful when
 		https://github.com/hespanha/funpartools/archive/master.zip
  	   and unziping to an appropriate location
 
-	2. cloning this repository with Git, e.g., using the shell command
+	2. cloning this repository with svn, e.g., using the shell command
 	   ```sh
 	   svn checkout https://github.com/hespanha/funpartools.git
 	   ```
 	  
-	3. checking out this repository with svn, e.g., using the shell command
+	3. checking out this repository with Git, e.g., using the shell command
 	   ```sh
        git clone https://github.com/hespanha/funpartools.git
        ```

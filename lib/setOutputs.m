@@ -54,7 +54,7 @@ for i=1:length(callerVariables)
         if ~isempty(pedigreeClass)
             filename=sprintf('%s+%s',className,callerVariables{i}.VariableName);
             eval(sprintf('%s=vargout{k};',callerVariables{i}.VariableName));
-            vargout{k}=outputWithPedigree(pedigreeName,filename,callerVariables{i}.VariableName);
+            vargout{k}=outputWithPedigree(pedigreeName,filename,callerVariables{i}.VariableName,false);
             saveValue(vargout{k},eval(callerVariables{i}.VariableName),callerName_);
         end
         k=k+1;

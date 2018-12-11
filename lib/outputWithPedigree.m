@@ -22,7 +22,7 @@ classdef outputWithPedigree
         pedigreeName
         fileName
         variableName
-        saveformat='serial';
+        saveFormat='serial';
                            % 'plainsave' seems to be the same as 'v7
                            % 'v7'   much faster than -v7.3
                            % 'v7.3' slower, but seems needed for large files
@@ -30,30 +30,27 @@ classdef outputWithPedigree
     end
     
     methods
-        function [obj,fileExists]=outputWithPedigree(pedigreeName,fileName,variableName)
+        function obj=outputWithPedigree(pedigreeName,fileName,variableName,checkFiles)
             obj.pedigreeName=pedigreeName;
             obj.fileName=fileName;
             obj.variableName=variableName;
-            switch obj.saveformat
-              case 'plainsave' % probably same as v7
-                if nargout>1
+            if checkFiles
+                switch obj.saveFormat
+                  case 'plainsave' % probably same as v7
                     fileExists=exist(obj.fileName,'file');
-                end
-              case 'v7'
-                if nargout>1
+                  case 'v7'
                     fileExists=exist(obj.fileName,'file');
-                end
-              case 'v7.3'
-                if nargout>1
+                  case 'v7.3'
                     fileExists=exist(obj.fileName,'file');
+                  case 'serial'
+                    obj.fileName=regexprep(obj.fileName,'\.mat$',''); 
+                    fileExists=exist([obj.fileName,'.serialmatlab'],'file');
+                  otherwise
+                    error('%s: unkown save format ''%s''\n',caller,obj.saveFormat);
                 end
-              case 'serial'
-                obj.fileName=regexprep(obj.fileName,'\.mat$',''); 
-                if nargout>1
-                   fileExists=exist([obj.fileName,'.serialmatlab'],'file');
+                if ~fileExists
+                    obj.fileName='';
                 end
-              otherwise
-                error('%s: unkown save format ''%s''\n',caller,obj.saveformat);
             end
         end
         
@@ -62,7 +59,7 @@ classdef outputWithPedigree
                 fprintf('%s: saving %s -> %s... ',caller,obj.variableName,obj.fileName);
                 t0=clock;
             end
-            switch obj.saveformat
+            switch obj.saveFormat
               case 'plainsave' % probably same as v7
                 assign(obj.variableName,value);
                 save(obj.fileName,obj.variableName); 
@@ -75,7 +72,7 @@ classdef outputWithPedigree
               case 'serial'
                 serialsave(obj.fileName,value);
               otherwise
-                error('%s: unkown save format ''%s''\n',caller,obj.saveformat);
+                error('%s: unkown save format ''%s''\n',caller,obj.saveFormat);
             end
             if nargin>=3
                 fprintf('done (%.3f sec)\n',etime(clock,t0));
@@ -87,25 +84,26 @@ classdef outputWithPedigree
                 fprintf('%s: loading %s <- %s... ',caller,obj.variableName,obj.fileName);
                 t0=clock;
             end
-            switch obj.saveformat
+            switch obj.saveFormat
               case {'plainsave','v7','v7.3'}
                 load(obj.fileName,obj.variableName);
                 value=eval(obj.variableName);
               case 'serial'
                 value=serialload(obj.fileName);
               otherwise
-                error('%s: unkown save format ''%s''\n',caller,obj.saveformat);
+                error('%s: unkown save format ''%s''\n',caller,obj.saveFormat);
             end
             if nargin>=2
                 fprintf('done (%.3f sec)\n',etime(clock,t0));
             end
         end
         
-        function disp(obj)
-            fprintf('pedigreeName = %s\n',obj.pedigreeName);
-            fprintf('fileName     = %s\n',obj.fileName);
-            fprintf('variableName = %s\n',obj.variableName);
-        end
+        % function disp(obj)
+        %     fprintf('pedigreeName = %s\n',obj.pedigreeName);
+        %     fprintf('fileName     = %s\n',obj.fileName);
+        %     fprintf('variableName = %s\n',obj.variableName);
+        %     fprintf('saveFormat   = %s\n',obj.saveFormat);
+        % end
     
     end
     

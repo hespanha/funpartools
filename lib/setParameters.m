@@ -480,14 +480,13 @@ if evalin('caller','exist(''executeScript'',''var'')')
                 end
                 if strcmp(callerVariables{i_}.type,'output')
                     filename=sprintf('%s+%s.mat',className,callerVariables{i_}.VariableName);
-                    [vargout{k},fileExists]=outputWithPedigree(...
-                        pedigreeName,filename,callerVariables{i_}.VariableName);
-                    k=k+1;
-                    if ~fileExists
+                    vargout{k}=outputWithPedigree(pedigreeName,filename,callerVariables{i_}.VariableName,true);
+                    if isempty(vargout{k}.fileName)
                         stopNow=false;
                         fprintf('%s: variable ''%s'' missing, must execute afterall\n',...
                                 callerName_,callerVariables{i_}.VariableName);
                     end
+                    k=k+1;
                 end
             end
             if nargout>length(vargout)

@@ -20,4 +20,4 @@ function rc=getFromPedigree()
 % You should have received a copy of the GNU General Public License
 % along with TensCalc.  If not, see <http://www.gnu.org/licenses/>.
 
-rc=outputWithPedigree('','','');
+rc=outputWithPedigree('','','',false);

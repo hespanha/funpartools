@@ -98,6 +98,24 @@ classdef outputWithPedigree
             end
         end
         
+        function varargout=feval(f,varargin)
+
+            f1=getValue(f);
+            varargout=cell(nargout,1);
+            if nargin>1
+                [varargout{:}]=feval(f1,varargin);
+            else
+                [varargout{:}]=feval(f1);
+            end
+        end
+            
+        function varargout=help(f)
+
+            f1=getValue(f);
+            varargout=cell(nargout,1);
+            [varargout{:}]=help(f1);
+        end
+            
         % function disp(obj)
         %     fprintf('pedigreeName = %s\n',obj.pedigreeName);
         %     fprintf('fileName     = %s\n',obj.fileName);

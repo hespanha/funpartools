@@ -42,7 +42,7 @@ function [stopNow,parameters]=setParameters(nargout,list_)
 % 
 %     % Set outputs
 % 
-%     vargout=setOutputs(nargout,params);
+%     varargout=setOutputs(nargout,params);
 %
 %  end
 %

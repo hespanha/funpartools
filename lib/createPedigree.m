@@ -183,6 +183,9 @@ for i=1:length(names)
         if strcmp(class(vj),'Tcalculus')
             vj=str(vj);
         end
+        if strcmp(class(vj),'csparse')
+            vj=str(vj);
+        end
         if isfloat(vj)
             if j==1
                 fprintf(fid,'[');

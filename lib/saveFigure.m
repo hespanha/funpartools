@@ -212,7 +212,7 @@ for i=1:length(figureNumber)
     if isempty(filename)
         thisname=get(figureNumber(i),'name');
         % remove from name "forbidden" characters
-        thisname=regexprep(thisname,'[ /,:]','_');
+        thisname=regexprep(thisname,'[\\ /,:]','_');
         thisname=regexprep(thisname,'[\[\(]','{');
         thisname=regexprep(thisname,'[\]\)]','}');
         thisname=regexprep(thisname,'[.]','_');

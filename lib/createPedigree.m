@@ -280,6 +280,8 @@ for i=1:length(names)
             if j==length(value)
                 fprintf(fid,']<BR>\n');
             end
+        elseif strcmp(class(vj),'cell')
+            error('createPedigree: cell of cells not yet implemented\n');
         else
             error('createPedigree: unknown parameter type ''%s'' for ''%s''\n',class(vj),names{i});
         end
@@ -356,6 +358,8 @@ save(pedigreeNameMat,'-v7.3',...
 return
 
 
+end
+
 function modifiedstr=strrep_start(origstr,oldstart,newstart)
 % modifiedstr=strrep_start(origstr,oldstart,newstart)
 % Replace string oldstart by newstart, if the string origstr starts
@@ -367,4 +371,7 @@ else
     modifiedstr=origstr;
 end
 
+
+
+end
 

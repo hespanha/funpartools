@@ -176,7 +176,11 @@ for i=1:length(names)
     end
 
     for j=1:length(value);
-        vj=value(j);
+        if iscell(value)
+            vj=value{j};
+        else
+            vj=value(j);
+        end
         if iscell(vj) && length(vj)==1
             vj=vj{1};
         end

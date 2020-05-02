@@ -77,10 +77,16 @@ if evalin('caller','exist(''localVariables_'',''var'')')
 else
     error('setParameters(%s): Use declareParameters before calling setParameter\n',callerName_);
 end
+if length(list_)==1 && isstruct(list_{1})
+    list_=struct2list(list_{1});
+end
 
 %% Print help and exit with stopNow=1
-if ~isempty(list_) && strcmp(lower(list_{1}),'help') && (length(list_)==1 ||...
-                                      length(list_)==2 && strcmp(lower(list_{2}),'latex'))
+if isempty(list_) || ...
+        ( strcmp(lower(list_{1}),'help') && ...
+          (length(list_)==1 || length(list_)==2 && strcmp(lower(list_{2}),'latex') ) )
+    
+    %~isempty(list_) && strcmp(lower(list_{1}),'help') && (length(list_)==1 || length(list_)==2 && strcmp(lower(list_{2}),'latex'))
     latex=length(list_)==2;
     
     if nargout==0

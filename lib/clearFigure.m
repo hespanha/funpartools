@@ -201,10 +201,8 @@ for i=1:prod(subplots)
         subplot(subplots(1),subplots(2),i);
     end
     axes;
-    %colormap([0,0,0]);
-    axis equal
-    %axis ij
-    axis off
+    %axis equal - very slow
+    %axis off - very slow
     
     zoom reset;
     zoom off;
@@ -225,4 +223,7 @@ clf
 varargout=setOutputs(nargout,params);
 
     
+
+
+end
 

@@ -323,7 +323,12 @@ for i=1:length(files)
     if verboseLevel>1
         fprintf('createPedigree: testing\n\t  ''%s''\n\t==''%s''\n',pedigreeName,thisName)
     end
-    pedigree=fileread(thisName);
+    try
+        pedigree=fileread(thisName);
+    catch
+        fprintf('createPedigree: cannot read file ''%s''\n',thisName);
+        continue
+    end
     if strcmp(thisPedigree,pedigree)
         % same content
         if verboseLevel>0

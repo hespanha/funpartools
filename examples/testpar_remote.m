@@ -16,6 +16,10 @@ ho=cell(0,1);
 
 remoteTaskExecution(tasks);
 
+pause(10);
+
+[out,timing,task]=getTaskOutput(tasks,1);
+
 return
 
 t0=clock();

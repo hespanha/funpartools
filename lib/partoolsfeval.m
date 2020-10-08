@@ -7,6 +7,8 @@ classdef partoolsfeval < handle;
         
         % time to sleep, while waiting
         waitTimeSec=1;
+        
+        verboseLevel=1;
     end
     
     methods;
@@ -15,7 +17,7 @@ classdef partoolsfeval < handle;
         %% Object creation %%
         %%%%%%%%%%%%%%%%%%%%%
         
-        function obj=partoolsfeval(folder,create)
+        function obj=partoolsfeval(folder,create,verboseLevel)
         % obj=partoolsfeval(folder)
         %
         % obj=partoolsfeval(folder,create)
@@ -30,24 +32,63 @@ classdef partoolsfeval < handle;
         % When the input parameter |create| is not present or it is
         % false and the folder does not exists, an error is generated.
             
+            obj.allTasksFolder=folder;
             if nargin<2
                 create=false;
             end
-            
-            if exist(folder,'dir')
-                obj.allTasksFolder=folder;
-            elseif create
-                [suc,msg]=mkdir(folder);
-                if suc 
-                    obj.allTasksFolder=folder;
-                else
-                    disp(msg);
-                    error('partoolsfeval: unable to create folder ''%s''\n',folder);                    
-                end
-            else
-                error('partoolsfeval: folder ''%s'' does not exist\n',folder);
+            if nargin>=3
+                obj.verboseLevel=verboseLevel;
             end
             
+            [isLocal,computer,filename]=parseName(obj,obj.allTasksFolder);
+            
+            if isLocal
+                % local filesysytem
+                if exist(folder,'dir')
+                    if obj.verboseLevel>1
+                        fprintf('partoolsfeval: reusing existing local tasks folder "%s"\n',folder);
+                    end
+                else
+                    if create
+                        [suc,msg]=mkdir(folder);
+                        if ~suc 
+                            disp(msg);
+                            error('partoolsfeval: unable to create local folder ''%s''\n',folder);                    
+                        end
+                    if obj.verboseLevel>1
+                        fprintf('partoolsfeval: successfully created local tasks folder "%s"\n',folder);
+                    end
+                    else
+                        error('partoolsfeval: local folder ''%s'' does not exist\n',folder);
+                    end
+                end
+            else
+                % remote filesystem
+                cmd=sprintf('ssh %s cd "%s"',computer,filename);
+                [rc,resul]=system(cmd);
+                exists=(rc==0);
+                if exists
+                    if obj.verboseLevel>1
+                        fprintf('partoolsfeval: reusing existing local tasks folder "%s"\n',folder);
+                    end
+                else
+                    if create
+                        cmd=sprintf('ssh %s mkdir "%s"',computer,filename);
+                        [rc,result]=system(cmd);
+                        suc=(rc==0);
+                        if ~suc
+                            disp(result)
+                            error('partoolsfeval: unable to create remote folder ''%s''\n',folder);                    
+                        end
+                    if obj.verboseLevel>1
+                        fprintf('partoolsfeval: successfully created remote tasks folder "%s"\n',folder);
+                    end
+                    else
+                        error('partoolsfeval: local folder ''%s'' does not exist\n',folder);
+                    end
+                end
+            end                
+        
         end
         
         %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -56,7 +97,7 @@ classdef partoolsfeval < handle;
         
         function fn=taskFoldername(obj,h)
         % returns folder filename, given the task handle
-            fn=fullfile(obj.allTasksFolder,sprintf('%d',h));
+            fn=fullfile(obj.allTasksFolder,sprintf('%06d',h));
         end
         function h=taskFolder2handle(obj,folder,name)
         % returns task handle, given task folder filename
@@ -99,9 +140,194 @@ classdef partoolsfeval < handle;
             fn=fullfile(taskFoldername(obj,h),'done.mat');
         end
         
+        function [isLocal,computer,filename]=parseName(obj,name)
+        % parses name to find out if it points to a remote file system
+            tokens=regexp(name,'^([\w\.]+@[\w\.-]+):(.*)$','tokens');
+            isLocal=isempty(tokens);
+            if isLocal
+                computer='';
+                filename=name;
+            else
+                computer=tokens{1}{1};
+                filename=tokens{1}{2};
+            end
+        end
+        
+        %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+        %% Atomic file system operations %%
+        %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+        function [success,cmd,rc,result]=atomicCreateFolder(obj,name)
+        % Atomically create a folder with given name.
+        %
+        % Names starting with 'username@domain:' are executed on a
+        % remote filesystem
+            
+            [isLocal,computer,filename]=parseName(obj,name);            
+            if isLocal
+                % local filesysytem
+                success=mkdir(name);
+                cmd='';
+                rc=nan;
+                result='';
+            else
+                % remote filesystem
+                cmd=sprintf('ssh %s mkdir "%s"',computer,filename);
+                [rc,result]=system(cmd);
+                success=(rc==0);
+            end
+        end
+        
+        function [success,cmd,rc,result]=atomicRename(obj,oldName,newName)
+        % Atomically rename a file
+        % 
+        % When the old name starts with 'username@domain:', the rename
+        % operation is performed remotely. The new file need not start
+        % with 'username@domain:'
+            
+            [isLocal,computer,filename]=parseName(obj,oldName);            
+            [isLocal2,computer2,filename2]=parseName(obj,newName);            
+            if ~isLocal2 && ~strcmp(computer,computer2)
+                error('atomicRename: remote rename but be within same filesystem ("%s"~="%s")',computer,computer2)
+            end
+            if isLocal
+                % local filesysytem
+                cmd=sprintf('mv "%s" "%s"',oldName,newName);
+                [rc,result]=system(cmd);
+                success=(rc==0);
+            else
+                cmd=sprintf('ssh %s mv "%s" "%s"',computer,filename,filename2);
+                [rc,result]=system(cmd);
+                success=(rc==0);                
+            end
+        end
+        
+        function [success,cmd,rc,result]=nonatomicCopyToRemote(obj,local,remote);
+        % Copy file from local to remote file systems. No guarantee is
+        % made that this will be an atomic operation, so locking must
+        % be providing by other means.
+            [isLocal,computer,filename]=parseName(obj,remote);            
+            if isLocal
+                error('nonatomicCopyToRemote: cannot parse remote name "%s"',remote);
+            end
+            cmd=sprintf('scp "%s" "%s:%s"',local,computer,filename);
+            %[rc,result]=system(cmd);
+            rc=system(cmd);
+            success=(rc==0);                
+            if ~success
+                %disp(result)
+                error('nonatomicCopyToRemote: copy "%s" failed\n',cmd);
+            end
+        end
+        
+        function [success,cmd,rc,result]=nonatomicCopyFromRemote(obj,remote,local);
+        % Copy file from remote to local file systems. No guarantee is
+        % made that this will be an atomic operation, so locking must
+        % be providing by other means.
+            [isLocal,computer,filename]=parseName(obj,remote);            
+            if isLocal
+                error('nonatomicCopyFromRemote: cannot parse remote name "%s"',remote);
+            end
+            cmd=sprintf('scp "%s:%s" "%s"',computer,filename,local);
+            %[rc,result]=system(cmd);
+            rc=system(cmd);
+            success=(rc==0);                
+            if ~success
+                %disp(result)
+                error('nonatomicCopyFromRemote: copy "%s" failed\n',cmd);
+            end
+        end
+        
+        function [files,cmd,rc,result]=dirLimited(obj,name)
+        % Get remove directory of a given folder. Only implemented for
+        % simple filename and does not support wildcards
+            
+            [isLocal,computer,filename]=parseName(obj,name);            
+            if isLocal
+                files=dir(name);
+                cmd='';
+                rc=nan;
+                result='';
+                return
+            end
+            cmd=sprintf('ssh %s ''ls -l "%s"''',computer,filename);
+            [rc,result]=system(cmd);
+            success=(rc==0);                
+            if ~success
+                disp(result)
+                error('dirLimited: ls -l failed\n');
+            end
+            lines=split(result,char(10));
+            tokens=regexp(lines,'^([d-])([rwx-]+) (.*) ([^ ]*)$','tokens');
+            k=find(~cellfun('isempty',tokens));
+            files=struct('name',{},'folder',{},'date',{},'bytes',{},'isdir',{},'datenum',{});
+            for i=1:length(k)
+                files(i).name=tokens{k(i)}{1}{4};
+                files(i).folder=name;
+                files(i).isdir=(tokens{k(i)}{1}{1}=='d');   
+            end
+            if obj.verboseLevel>2
+                fprintf('dirLimited: "%s" folder has %d files\n',name,length(files));
+            end            
+        end
+        
         %%%%%%%%%%%%%%%%%%%%%
         %% Task scheduling %%
         %%%%%%%%%%%%%%%%%%%%%
+        
+        function success=addTaskGivenHandle(obj,task)
+
+            taskFolder=taskFoldername(obj,task.h);
+            %% try to create a new task
+            [success,cmd,rc]=atomicCreateFolder(obj,taskFolder);
+            if ~success
+                if obj.verboseLevel>1
+                    fprintf('addTaskGivenHandle: unable to create task h=%d in "%s"\n',task.h,taskFolder);
+                end            
+                return
+            end
+
+            % success!
+            if obj.verboseLevel>1
+                fprintf('addTaskGivenHandle: created task h=%d in "%s"\n',task.h,taskFolder);
+            end
+            cn=creationFilename(obj,task.h);
+            % create with a temporary same 
+            [isLocal,computer,filename]=parseName(obj,cn);            
+            if obj.verboseLevel>2
+                t0=clock();
+                fprintf('addTaskGivenHandle: saving parameters... ');                
+            end
+            if isLocal
+                save(cn,'task');
+                if obj.verboseLevel>2
+                    fprintf('saved locally (%.3f sec)... ',etime(clock,t0));                
+                end
+            else
+                localname=[tempname,'.mat'];
+                save(localname,'task');
+                if obj.verboseLevel>2
+                    fprintf('saved locally (%.3f sec)... ',etime(clock,t0));                
+                end
+                nonatomicCopyToRemote(obj,localname,cn);
+                if obj.verboseLevel>2
+                    fprintf('copied to remote (%.3f sec)... ',etime(clock,t0));                
+                end
+            end
+            % use atomicity of 'mv' to make sure the whole file appears "atomically"
+            wn=waitingFilename(obj,task.h);
+            [success,cmd,rc,result]=atomicRename(obj,cn,wn);
+            if obj.verboseLevel>2
+                fprintf('done (%.3f sec)\n',etime(clock,t0));                
+            end
+            if ~success
+                disp(result)
+                error('addTaskGivenHandle: command "%s" failed with rc=%d, this should not happen!\n',cmd,rc);
+            end
+            if obj.verboseLevel>0
+                fprintf('addTaskGivenHandle: successfully created task h=%d in\n\t"%s"\n',task.h,taskFolder);
+            end            
+        end
         
         function h=addTask(obj,fun,in)
         % addTask(obj,fun,in)
@@ -125,43 +351,30 @@ classdef partoolsfeval < handle;
             task.fun=fun;
             task.in=in;
             c=0;
-            while 1
-                wc=taskFolderWildCard(obj);
-                f=dir(wc);
-                h=1;
-                for i=1:length(f)
-                    hi=taskFolder2handle(obj,f(i).folder,f(i).name);
-                    h=max(h,1+hi);
-                end
-                tf=taskFoldername(obj,h);
-                %% try to create a new task
-                suc=mkdir(tf);
-                if suc
-                    % success!
-                    fprintf('addTask: created task %d "%s"\n',h,tf)
-                    task.h=h;
-                    cn=creationFilename(obj,h);
-                    % create with a temporary same 
-                    save(cn,'task');
-                    % use atomicity of 'mv' to make sure the whole file appears "atomically"
-                    wn=waitingFilename(obj,h);
-                    cmd=sprintf('mv %s %s',cn,wn);
-                    rc=system(cmd);
-                    if rc
-                        disp(cmd);
-                        error('addTask failed to mv "%s" to "%s" with rc=%d, this should not happen!\n',cn,wn,rc);
-                    end
+            wc=taskFolderWildCard(obj);
+            f=dirLimited(obj,wc);
+            task.h=1;
+            for i=1:length(f)
+                hi=taskFolder2handle(obj,f(i).folder,f(i).name);
+                task.h=max(task.h,1+hi);
+            end
+            while c<100
+                success=addTaskGivenHandle(obj,task);
+                if success
+                    h=task.h;
                     return
                 end
-                c=c+1;
-                if c>1000
-                    break
-                end
                 % some other process already took this handle, try again
-                fprintf('addTask failed attempt %d, trying again\n',c);
-                pause(rand(.5));
-            end
-            error('addTask failed too many times (%d)\n',c);
+                fprintf('addTask: failed for h=%d (attempt %d), trying again\n',task.h,c);
+                
+                %fprintf('paused');pause
+                
+                % try again with next h
+                task.h=task.h+1;
+                pause(.5*rand);
+                c=c+1; 
+           end
+           error('addTask failed too many times (%d)\n',c);
         end
         
         function waitForTasks(obj)
@@ -178,8 +391,10 @@ classdef partoolsfeval < handle;
                     fprintf('waitForTasks: done (%.2f sec)\n',etime(clock,t0));
                     return
                 end
-                fprintf('waitForTasks: %d task waiting, %d tasks executing (%.2f sec)\n',...
-                        length(wf),length(ef),etime(clock,t0));
+                if obj.verboseLevel>0
+                    fprintf('waitForTasks: %d task waiting, %d tasks executing (%.2f sec)\n',...
+                            length(wf),length(ef),etime(clock,t0));
+                end
                 pause(obj.waitTimeSec);
             end
         end
@@ -207,9 +422,8 @@ classdef partoolsfeval < handle;
                 end
                 wn=fullfile(f(1).folder,f(1).name);
                 en=waiting2executing(obj,f(1).folder,f(1).name);
-                cmd=sprintf('mv %s %s 2>/dev/null',wn,en);
-                rc=system(cmd);
-                if rc
+                [success,cmd,rc]=atomicRename(obj,wn,en);
+                if ~success
                     % error, someone else grabed this one for execution, try next one
                     f(1)=[];
                     if isempty(f)
@@ -219,29 +433,33 @@ classdef partoolsfeval < handle;
                 end
                 fprintf('executeTasks: starting task "%s"\n',en);
                 try
-                    t0=clock();
+                    task.timing.preLoad=clock();
                     ld=load(en);
                     task=ld.task;
                     h(end+1,1)=task.h;
-                    task.timing.preLoad=clock();
                     task.timing.postLoad=clock();
                     task.out=feval(task.fun,task.in,task.h);
                     %task=rmfield(task,'in'); % could save space
-                    task.timing.finished=clock();
+                    task.timing.postCompute=clock();
                 catch me
+                    task.timing.postCompute=clock();
                     task.err=me;
                     disp(me);
                 end
                 d1n=waiting2executed(obj,f(1).folder,f(1).name);
                 % create with a temporary same 
-                save(d1n,'task')
-                % use atomicity of 'mv' to make sure the whole file appears "atomically"
+                save(d1n,'task');
                 d2n=waiting2done(obj,f(1).folder,f(1).name);
-                cmd=sprintf('mv %s %s',d1n,d2n);
-                rc=system(cmd);
-                if rc
-                    disp(cmd);
-                    error('addTask failed to mv "%s" to "%s" with rc=%d, this should not happen!\n',d1n,d2n,rc);
+                [success,cmd,rc]=atomicRename(obj,d1n,d2n);
+                task.timing.postSave=clock();
+                % timing
+                task.timing.totalElapsed=etime(task.timing.postSave,task.timing.preLoad);
+                task.timing.totalCompute=etime(task.timing.postCompute,task.timing.postLoad);
+                task.timing.totalLoad=etime(task.timing.postLoad,task.timing.preLoad);
+                task.timing.totalSave=etime(task.timing.postSave,task.timing.postCompute);
+                % use atomicity of 'mv' to make sure the whole file appears "atomically"
+                if ~success
+                    error('addTask command "%s" failed with rc=%d, this should not happen!\n',cmd,rc);
                 end
                 % delete "executing file"
                 delete(en);
@@ -255,12 +473,49 @@ classdef partoolsfeval < handle;
             end
         end
         
+        function [success,cmd,rc,result]=remoteTaskExecution(obj)
+            [isLocal,computer,filename]=parseName(obj,obj.allTasksFolder);
+            if isLocal
+                error('remoteTaskExecution: cannot parse remote name "%s"',name);
+            end
+            qsubCmd=sprintf('qsub -N pbsjob_partoolsfeval -M hespanha@ece.ucsb.edu -m e -q xeon -l select=1:ncpus=112 -o %s -e %s',filename,filename);
+            matlabExecutable='/homes/hespanha/bin/matlab';
+            matlabOptions='-nosplash -noFigureWindows';
+            matlabCmd=sprintf('obj=partoolsfeval\\(\\''%s\\''\\)\\;executeTasks\\(obj\\)\\;quit',filename);
+            cmd=['ssh ',computer,' "',qsubCmd,' -- ',matlabExecutable,' ',matlabOptions,' -r ',matlabCmd,'"'];
+            if obj.verboseLevel>2
+                fprintf('remoteTaskExecution: executing "%s"\n',cmd);
+            end
+            [rc,result]=system(cmd);
+            success=(rc==0);
+            if ~success
+                disp(cmd);
+                disp(result);
+                error('remoteTaskExecution: failed\n');
+            end
+            if obj.verboseLevel>2
+                fprintf('remoteTaskExecution: succeded with "%s"\n',result(1:end-1));
+            end            
+        end
+        
+        %%%%%%%%%%%%%%%%%%%%
+        %% Task executing %%
+        %%%%%%%%%%%%%%%%%%%%
+                
         function [out,timing,task]=getTaskOutput(obj,h)
         % task=getTaskOutput(obj,h)
         %
         % get the output of a task, given its handle
             fn=doneFilename(obj,h);
-            ld=load(fn);
+            [isLocal,computer,filename]=parseName(obj,fn);
+            if isLocal
+                ld=load(fn);
+            else
+                localname=[tempname,'.mat'];
+                nonatomicCopyFromRemote(obj,fn,localname);
+                ld=load(localname);
+                delete(localname);
+            end
             task=ld.task;
             out=task.out;
             timing=task.timing;

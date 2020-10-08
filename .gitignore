@@ -1,6 +1,9 @@
 # assume case sensitive, which is acheived with
 # git config core.ignorecase false
 
+## Sync stuff
+.add*.unison
+
 ## Apple stuff
 .DS_Store
 

@@ -250,8 +250,12 @@ classdef partoolsfeval < handle;
                 result='';
                 return
             end
-            cmd=sprintf('ssh %s ''ls -l "%s"''',computer,filename);
+            cmd=sprintf('ssh %s ls -l "%s"',computer,filename);
             [rc,result]=system(cmd);
+            if rc~=0 && startsWith(result,'ls: cannot access')
+                rc=0;
+                result='';
+            end
             success=(rc==0);                
             if ~success
                 disp(result)
@@ -386,11 +390,18 @@ classdef partoolsfeval < handle;
         %
         % Waits until all the tasks have been completed
             t0=clock();
+            waitingWC=waitingWildcard(obj);
+            executingWC=executingWildcard(obj);
+            [isLocal,computer,filename]=parseName(obj,waitingWC);
+            if isLocal
+                thisDir=@dir;
+            else
+                thisDir=@(pth)dirLimited(obj,pth);
+            end
+            
             while 1
-                wc=waitingWildcard(obj);
-                wf=dir(wc);
-                wc=executingWildcard(obj);
-                ef=dir(wc);
+                wf=thisDir(waitingWC);
+                ef=thisDir(executingWC);
                 if isempty(wf) && isempty(ef)
                     fprintf('waitForTasks: done (%.2f sec)\n',etime(clock,t0));
                     return
@@ -452,26 +463,26 @@ classdef partoolsfeval < handle;
                     disp(me);
                 end
                 d1n=waiting2executed(obj,f(1).folder,f(1).name);
-                task.timing.totalLoad=etime(task.timing.postLoad,task.timing.preLoad);
-                task.timing.totalCompute=etime(task.timing.postCompute,task.timing.postLoad);
+                task.timing.elapsedLoad=etime(task.timing.postLoad,task.timing.preLoad);
+                task.timing.elapsedCompute=etime(task.timing.postCompute,task.timing.postLoad);
                 % create with a temporary same 
                 save(d1n,'task');
                 d2n=waiting2done(obj,f(1).folder,f(1).name);
                 [success,cmd,rc]=atomicRename(obj,d1n,d2n);
                 % past this, task timings will not be saved
                 task.timing.postSave=clock();
-                task.timing.totalElapsed=etime(task.timing.postSave,task.timing.preLoad);
-                task.timing.totalSave=etime(task.timing.postSave,task.timing.postCompute);
+                task.timing.elapsedTotal=etime(task.timing.postSave,task.timing.preLoad);
+                task.timing.elapsedSave=etime(task.timing.postSave,task.timing.postCompute);
                 % use atomicity of 'mv' to make sure the whole file appears "atomically"
                 if ~success
                     error('addTask command "%s" failed with rc=%d, this should not happen!\n',cmd,rc);
                 end
                 % delete "executing file"
                 delete(en);
-                if task.timing.totalElapsed>.01
-                    fprintf('executeTasks: finished task %d (%.3f sec)\n',task.h,task.timing.totalElapsed);
+                if task.timing.elapsedTotal>.01
+                    fprintf('executeTasks: finished task %d (%.3f sec)\n',task.h,task.timing.elapsedTotal);
                 else
-                    fprintf('executeTasks: finished task %d (%.3f msec)\n',task.h,1e3*task.timing.totalElapsed);
+                    fprintf('executeTasks: finished task %d (%.3f msec)\n',task.h,1e3*task.timing.elapsedTotal);
                 end
                 f=dir(wc);
             end
@@ -483,7 +494,12 @@ classdef partoolsfeval < handle;
         % Lauches several workers to execute pending tasks, with no
         % more than the given number of workers
             
-            pool=gcp();
+        % check if a pool exists
+            pool=gcp('nocreate');
+            if isempty(pool)
+                % if not, create one with as many workers as possible, up to numWorkers
+                pool=gcp([0,numWorkers]);
+            end
             numWorkers=min(pool.NumWorkers,numWorkers);
             h=cell(numWorkers,1);
             if blocking
@@ -507,7 +523,7 @@ classdef partoolsfeval < handle;
             qsubCmd=sprintf('qsub -N pbsjob_partoolsfeval -M hespanha@ece.ucsb.edu -m e -q xeon -l select=1:ncpus=112 -o %s -e %s',filename,filename);
             matlabExecutable='/homes/hespanha/bin/matlab';
             matlabOptions='-nosplash -noFigureWindows';
-            matlabCmd=sprintf('obj=partoolsfeval\\(\\''%s\\''\\)\\;executeTasks\\(obj,true,%d\\)\\;quit',filename,numWorkers);
+            matlabCmd=sprintf('obj=partoolsfeval\\(\\''%s\\''\\)\\;executeTasksParallel\\(obj,true,%d\\)\\;quit',filename,numWorkers);
             cmd=['ssh ',computer,' "',qsubCmd,' -- ',matlabExecutable,' ',matlabOptions,' -r ',matlabCmd,'"'];
             if obj.verboseLevel>2
                 fprintf('remoteTaskExecution: executing "%s"\n',cmd);
@@ -519,7 +535,7 @@ classdef partoolsfeval < handle;
                 disp(result);
                 error('remoteTaskExecution: failed\n');
             end
-            if obje.verboseLevel>0
+            if obj.verboseLevel>0
                 fprintf('remoteTaskExecution: succeded in launching %d workers at "%s", "%s"\n',numWorkers,computer,result(1:end-1));                
             end
         end
@@ -534,6 +550,7 @@ classdef partoolsfeval < handle;
         % get the output of a task, given its handle
             fn=doneFilename(obj,h);
             [isLocal,computer,filename]=parseName(obj,fn);
+            t0=clock();
             if isLocal
                 ld=load(fn);
             else
@@ -543,8 +560,11 @@ classdef partoolsfeval < handle;
                 delete(localname);
             end
             task=ld.task;
-            out=task.out;
             timing=task.timing;
+            timing.preRetrieve=t0;
+            timing.postRetrieve=clock();
+            timing.elapsedRetrieve=etime(timing.postRetrieve,timing.preRetrieve);
+            out=task.out;
         end
     end
     

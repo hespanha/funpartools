@@ -2,7 +2,7 @@
 
 folder='hespanha@ssh-iam.intel-research.net:systemid/matlab/tmp_tasks'; 
 create=true';
-verboseLevel=3;
+verboseLevel=2;
 tasks=partoolsfeval(folder,create,verboseLevel)
 
 %profile on
@@ -17,8 +17,9 @@ end
 %% Execute tasks
 remoteTaskExecution(tasks,5);
 
-pause(10);
 
+waitForTasks(tasks);
+    
 [out,timing,task]=getTaskOutput(tasks,1);
 
 return

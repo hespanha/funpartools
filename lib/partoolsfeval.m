@@ -498,7 +498,7 @@ classdef partoolsfeval < handle;
             pool=gcp('nocreate');
             if isempty(pool)
                 % if not, create one with as many workers as possible, up to numWorkers
-                pool=gcp([0,numWorkers]);
+                pool=parpool([0,numWorkers]);
             end
             numWorkers=min(pool.NumWorkers,numWorkers);
             h=cell(numWorkers,1);

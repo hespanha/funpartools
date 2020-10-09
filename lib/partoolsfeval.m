@@ -325,7 +325,11 @@ classdef partoolsfeval < handle;
                 error('addTaskGivenHandle: command "%s" failed with rc=%d, this should not happen!\n',cmd,rc);
             end
             if obj.verboseLevel>0
-                fprintf('addTaskGivenHandle: successfully created task h=%d in\n\t"%s"\n',task.h,taskFolder);
+                if length(taskFolder)<=30
+                    fprintf('addTaskGivenHandle: successfully created task h=%d in "%s"\n',task.h,taskFolder);
+                else
+                    fprintf('addTaskGivenHandle: successfully created task h=%d in\n\t"%s"\n',task.h,taskFolder);
+                end
             end            
         end
         
@@ -403,12 +407,12 @@ classdef partoolsfeval < handle;
         %% Task executing %%
         %%%%%%%%%%%%%%%%%%%%
         
-        function h=executeTasks(obj)
+        function h=executeTasksOneWorker(obj)
         % h=executeTask(obj)
         % 
-        % Executes tasks in the set of tasks to be executed until no
-        % more tasks remain pendings. Returns an array with the
-        % handles of all the tasks executed.
+        % Executes tasks for execution until no more tasks remain
+        % pendings. Returns an array with the handles of all the tasks
+        % executed.
 
         %% Exclusivity based on atomicity of 'mv'
 
@@ -433,9 +437,10 @@ classdef partoolsfeval < handle;
                 end
                 fprintf('executeTasks: starting task "%s"\n',en);
                 try
-                    task.timing.preLoad=clock();
+                    t0=clock();
                     ld=load(en);
                     task=ld.task;
+                    task.timing.preLoad=t0;
                     h(end+1,1)=task.h;
                     task.timing.postLoad=clock();
                     task.out=feval(task.fun,task.in,task.h);
@@ -447,15 +452,15 @@ classdef partoolsfeval < handle;
                     disp(me);
                 end
                 d1n=waiting2executed(obj,f(1).folder,f(1).name);
+                task.timing.totalLoad=etime(task.timing.postLoad,task.timing.preLoad);
+                task.timing.totalCompute=etime(task.timing.postCompute,task.timing.postLoad);
                 % create with a temporary same 
                 save(d1n,'task');
                 d2n=waiting2done(obj,f(1).folder,f(1).name);
                 [success,cmd,rc]=atomicRename(obj,d1n,d2n);
+                % past this, task timings will not be saved
                 task.timing.postSave=clock();
-                % timing
                 task.timing.totalElapsed=etime(task.timing.postSave,task.timing.preLoad);
-                task.timing.totalCompute=etime(task.timing.postCompute,task.timing.postLoad);
-                task.timing.totalLoad=etime(task.timing.postLoad,task.timing.preLoad);
                 task.timing.totalSave=etime(task.timing.postSave,task.timing.postCompute);
                 % use atomicity of 'mv' to make sure the whole file appears "atomically"
                 if ~success
@@ -463,17 +468,38 @@ classdef partoolsfeval < handle;
                 end
                 % delete "executing file"
                 delete(en);
-                dt=etime(task.timing.finished,task.timing.preLoad);
-                if dt>.01
-                    fprintf('executeTasks: finished task %d (%.3f sec)\n',task.h,dt);
+                if task.timing.totalElapsed>.01
+                    fprintf('executeTasks: finished task %d (%.3f sec)\n',task.h,task.timing.totalElapsed);
                 else
-                    fprintf('executeTasks: finished task %d (%.3f msec)\n',task.h,1e3*dt);
+                    fprintf('executeTasks: finished task %d (%.3f msec)\n',task.h,1e3*task.timing.totalElapsed);
                 end
                 f=dir(wc);
             end
         end
         
-        function [success,cmd,rc,result]=remoteTaskExecution(obj)
+        function h=executeTasksParallel(obj,blocking,numWorkers)
+        % executeTasksParallel(obj,blocking)
+        % 
+        % Lauches several workers to execute pending tasks, with no
+        % more than the given number of workers
+            
+            pool=gcp();
+            numWorkers=min(pool.NumWorkers,numWorkers);
+            h=cell(numWorkers,1);
+            if blocking
+                % parallel execution with parfor, only returns when all workers are done
+                parfor i=1:numWorkers
+                    h{i,1}=executeTasksOneWorker(obj);
+                end 
+            else
+                % parallel execution with parfeval, nonblocking
+                for i=1:numWorkers
+                    h{i,1}=parfeval(pool,@executeTasksOneWorker,1,obj);
+                end
+            end
+        end
+        
+        function [success,cmd,rc,result]=remoteTaskExecution(obj,numWorkers)
             [isLocal,computer,filename]=parseName(obj,obj.allTasksFolder);
             if isLocal
                 error('remoteTaskExecution: cannot parse remote name "%s"',name);
@@ -481,7 +507,7 @@ classdef partoolsfeval < handle;
             qsubCmd=sprintf('qsub -N pbsjob_partoolsfeval -M hespanha@ece.ucsb.edu -m e -q xeon -l select=1:ncpus=112 -o %s -e %s',filename,filename);
             matlabExecutable='/homes/hespanha/bin/matlab';
             matlabOptions='-nosplash -noFigureWindows';
-            matlabCmd=sprintf('obj=partoolsfeval\\(\\''%s\\''\\)\\;executeTasks\\(obj\\)\\;quit',filename);
+            matlabCmd=sprintf('obj=partoolsfeval\\(\\''%s\\''\\)\\;executeTasks\\(obj,true,%d\\)\\;quit',filename,numWorkers);
             cmd=['ssh ',computer,' "',qsubCmd,' -- ',matlabExecutable,' ',matlabOptions,' -r ',matlabCmd,'"'];
             if obj.verboseLevel>2
                 fprintf('remoteTaskExecution: executing "%s"\n',cmd);
@@ -493,9 +519,9 @@ classdef partoolsfeval < handle;
                 disp(result);
                 error('remoteTaskExecution: failed\n');
             end
-            if obj.verboseLevel>2
-                fprintf('remoteTaskExecution: succeded with "%s"\n',result(1:end-1));
-            end            
+            if obje.verboseLevel>0
+                fprintf('remoteTaskExecution: succeded in launching %d workers at "%s", "%s"\n',numWorkers,computer,result(1:end-1));                
+            end
         end
         
         %%%%%%%%%%%%%%%%%%%%

@@ -6,15 +6,16 @@ verboseLevel=3;
 tasks=partoolsfeval(folder,create,verboseLevel)
 
 %profile on
+%% Create tasks
 hi=[];
 for i=1:10
     hi(end+1,1)=addTask(tasks,@(x,h)sin(x),rand(100,100));
 end
-ho=cell(0,1);
 
 %profile viewer
 
-remoteTaskExecution(tasks);
+%% Execute tasks
+remoteTaskExecution(tasks,5);
 
 pause(10);
 

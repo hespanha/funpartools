@@ -252,12 +252,9 @@ classdef partoolsfeval < handle;
             end
             cmd=sprintf('ssh %s ls -l "%s"',computer,filename);
             [rc,result]=system(cmd);
-            if rc~=0 && startsWith(result,'ls: cannot access')
-                rc=0;
-                result='';
-            end
             success=(rc==0);                
-            if ~success
+            % when using wildcards, an error is generated if the file does not exist
+            if false %~success
                 disp(result)
                 error('dirLimited: ls -l failed\n');
             end
@@ -454,7 +451,7 @@ classdef partoolsfeval < handle;
                     task.timing.preLoad=t0;
                     h(end+1,1)=task.h;
                     task.timing.postLoad=clock();
-                    task.out=feval(task.fun,task.in,task.h);
+                    task.out=feval(task.fun,task.in);
                     %task=rmfield(task,'in'); % could save space
                     task.timing.postCompute=clock();
                 catch me
@@ -515,15 +512,21 @@ classdef partoolsfeval < handle;
             end
         end
         
-        function [success,cmd,rc,result]=remoteTaskExecution(obj,numWorkers)
+        function [success,cmd,rc,result]=remoteTaskExecution(obj,numWorkers,remotePath)
             [isLocal,computer,filename]=parseName(obj,obj.allTasksFolder);
             if isLocal
                 error('remoteTaskExecution: cannot parse remote name "%s"',name);
             end
+
+            % make sure remote folder will not be affected by cd
+            if filename(1)~='/'
+                filename=['~/',filename];
+            end
+            
             qsubCmd=sprintf('qsub -N pbsjob_partoolsfeval -M hespanha@ece.ucsb.edu -m e -q xeon -l select=1:ncpus=112 -o %s -e %s',filename,filename);
             matlabExecutable='/homes/hespanha/bin/matlab';
             matlabOptions='-nosplash -noFigureWindows';
-            matlabCmd=sprintf('obj=partoolsfeval\\(\\''%s\\''\\)\\;executeTasksParallel\\(obj,true,%d\\)\\;quit',filename,numWorkers);
+            matlabCmd=sprintf('cd\\(\\''%s\\''\\)\\;obj=partoolsfeval\\(\\''%s\\''\\)\\;executeTasksParallel\\(obj,true,%d\\)\\;quit',remotePath,filename,numWorkers);
             cmd=['ssh ',computer,' "',qsubCmd,' -- ',matlabExecutable,' ',matlabOptions,' -r ',matlabCmd,'"'];
             if obj.verboseLevel>2
                 fprintf('remoteTaskExecution: executing "%s"\n',cmd);
@@ -559,11 +562,14 @@ classdef partoolsfeval < handle;
                 ld=load(localname);
                 delete(localname);
             end
-            task=ld.task;
+            task=ld.task
             timing=task.timing;
             timing.preRetrieve=t0;
             timing.postRetrieve=clock();
             timing.elapsedRetrieve=etime(timing.postRetrieve,timing.preRetrieve);
+            if ~isfield(task,'out')
+                task.out=struct();
+            end
             out=task.out;
         end
     end

@@ -491,7 +491,12 @@ classdef partoolsfeval < handle;
         % Lauches several workers to execute pending tasks, with no
         % more than the given number of workers
             
-        % check if a pool exists
+            if blocking && numWorkers==1
+                h{1}=executeTasksOneWorker(obj);
+                return;
+            end
+            
+            % check if a pool exists
             pool=gcp('nocreate');
             if isempty(pool)
                 % if not, create one with as many workers as possible, up to numWorkers
@@ -523,10 +528,10 @@ classdef partoolsfeval < handle;
                 filename=['~/',filename];
             end
             
-            qsubCmd=sprintf('qsub -N pbsjob_partoolsfeval -M hespanha@ece.ucsb.edu -m e -q xeon -l select=1:ncpus=112 -o %s -e %s',filename,filename);
+            qsubCmd=sprintf('qsub -N pbsjob_partoolsfeval -M hespanha@ece.ucsb.edu -m e -q xeon -l select=1:ncpus=% -o %s -e %s',2*numWorkers,filename,filename);
             matlabExecutable='/homes/hespanha/bin/matlab';
             matlabOptions='-nosplash -noFigureWindows';
-            matlabCmd=sprintf('cd\\(\\''%s\\''\\)\\;obj=partoolsfeval\\(\\''%s\\''\\)\\;executeTasksParallel\\(obj,true,%d\\)\\;quit',remotePath,filename,numWorkers);
+            matlabCmd=sprintf('cd\\(\\''%s\\''\\)\\;system\\(\\''module list\\''\\)\\;obj=partoolsfeval\\(\\''%s\\''\\)\\;executeTasksParallel\\(obj,true,%d\\)\\;quit',remotePath,filename,numWorkers);
             cmd=['ssh ',computer,' "',qsubCmd,' -- ',matlabExecutable,' ',matlabOptions,' -r ',matlabCmd,'"'];
             if obj.verboseLevel>2
                 fprintf('remoteTaskExecution: executing "%s"\n',cmd);

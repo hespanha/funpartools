@@ -211,8 +211,12 @@ classdef partoolsfeval < handle;
                 error('nonatomicCopyToRemote: cannot parse remote name "%s"',remote);
             end
             cmd=sprintf('scp "%s" "%s:%s"',local,computer,filename);
-            %[rc,result]=system(cmd);
-            rc=system(cmd);
+            if 0
+                [rc,result]=system(cmd);
+            else
+                rc=system(cmd);
+                result='';
+            end
             success=(rc==0);                
             if ~success
                 %disp(result)
@@ -276,29 +280,32 @@ classdef partoolsfeval < handle;
         %% Task scheduling %%
         %%%%%%%%%%%%%%%%%%%%%
         
-        function success=addTaskGivenHandle(obj,task)
+        function success=addTaskGivenHandle(obj,fun,in,h)
 
-            taskFolder=taskFoldername(obj,task.h);
+            taskFolder=taskFoldername(obj,h);
             %% try to create a new task
             [success,cmd,rc]=atomicCreateFolder(obj,taskFolder);
             if ~success
                 if obj.verboseLevel>1
-                    fprintf('addTaskGivenHandle: unable to create task h=%d in "%s"\n',task.h,taskFolder);
+                    fprintf('addTaskGivenHandle: unable to create task h=%d in "%s"\n',h,taskFolder);
                 end            
                 return
             end
 
             % success!
             if obj.verboseLevel>1
-                fprintf('addTaskGivenHandle: created task h=%d in "%s"\n',task.h,taskFolder);
+                fprintf('addTaskGivenHandle: created task h=%d in "%s"\n',h,taskFolder);
             end
-            cn=creationFilename(obj,task.h);
+            cn=creationFilename(obj,h);
             % create with a temporary same 
             [isLocal,computer,filename]=parseName(obj,cn);            
             if obj.verboseLevel>2
                 t0=clock();
                 fprintf('addTaskGivenHandle: saving parameters... ');                
             end
+            task.fun=fun;
+            task.in=in;
+            task.h=h;
             if isLocal
                 save(cn,'task');
                 if obj.verboseLevel>2
@@ -316,7 +323,7 @@ classdef partoolsfeval < handle;
                 end
             end
             % use atomicity of 'mv' to make sure the whole file appears "atomically"
-            wn=waitingFilename(obj,task.h);
+            wn=waitingFilename(obj,h);
             [success,cmd,rc,result]=atomicRename(obj,cn,wn);
             if obj.verboseLevel>2
                 fprintf('done (%.3f sec)\n',etime(clock,t0));                
@@ -327,9 +334,9 @@ classdef partoolsfeval < handle;
             end
             if obj.verboseLevel>0
                 if length(taskFolder)<=30
-                    fprintf('addTaskGivenHandle: successfully created task h=%d in "%s"\n',task.h,taskFolder);
+                    fprintf('addTaskGivenHandle: successfully created task h=%d in "%s"\n',h,taskFolder);
                 else
-                    fprintf('addTaskGivenHandle: successfully created task h=%d in\n\t"%s"\n',task.h,taskFolder);
+                    fprintf('addTaskGivenHandle: successfully created task h=%d in\n\t"%s"\n',h,taskFolder);
                 end
             end            
         end
@@ -353,29 +360,26 @@ classdef partoolsfeval < handle;
             
         %% Exclusivity based on atomicity of 'mkdir' & 'mv'
             
-            task.fun=fun;
-            task.in=in;
             c=0;
             wc=taskFolderWildCard(obj);
             f=dirLimited(obj,wc);
-            task.h=1;
+            h=1;
             for i=1:length(f)
                 hi=taskFolder2handle(obj,f(i).folder,f(i).name);
-                task.h=max(task.h,1+hi);
+                h=max(h,1+hi);
             end
             while c<100
-                success=addTaskGivenHandle(obj,task);
+                success=addTaskGivenHandle(obj,fun,in,h);
                 if success
-                    h=task.h;
                     return
                 end
                 % some other process already took this handle, try again
-                fprintf('addTask: failed for h=%d (attempt %d), trying again\n',task.h,c);
+                fprintf('addTask: failed for h=%d (attempt %d), trying again\n',h,c);
                 
                 %fprintf('paused');pause
                 
                 % try again with next h
-                task.h=task.h+1;
+                h=h+1;
                 pause(.5*rand);
                 c=c+1; 
            end
@@ -517,37 +521,6 @@ classdef partoolsfeval < handle;
             end
         end
         
-        function [success,cmd,rc,result]=remoteTaskExecution(obj,numWorkers,remotePath)
-            [isLocal,computer,filename]=parseName(obj,obj.allTasksFolder);
-            if isLocal
-                error('remoteTaskExecution: cannot parse remote name "%s"',name);
-            end
-
-            % make sure remote folder will not be affected by cd
-            if filename(1)~='/'
-                filename=['~/',filename];
-            end
-            
-            qsubCmd=sprintf('qsub -N pbsjob_partoolsfeval -M hespanha@ece.ucsb.edu -m e -q xeon -l select=1:ncpus=% -o %s -e %s',2*numWorkers,filename,filename);
-            matlabExecutable='/homes/hespanha/bin/matlab';
-            matlabOptions='-nosplash -noFigureWindows';
-            matlabCmd=sprintf('cd\\(\\''%s\\''\\)\\;system\\(\\''module list\\''\\)\\;obj=partoolsfeval\\(\\''%s\\''\\)\\;executeTasksParallel\\(obj,true,%d\\)\\;quit',remotePath,filename,numWorkers);
-            cmd=['ssh ',computer,' "',qsubCmd,' -- ',matlabExecutable,' ',matlabOptions,' -r ',matlabCmd,'"'];
-            if obj.verboseLevel>2
-                fprintf('remoteTaskExecution: executing "%s"\n',cmd);
-            end
-            [rc,result]=system(cmd);
-            success=(rc==0);
-            if ~success
-                disp(cmd);
-                disp(result);
-                error('remoteTaskExecution: failed\n');
-            end
-            if obj.verboseLevel>0
-                fprintf('remoteTaskExecution: succeded in launching %d workers at "%s", "%s"\n',numWorkers,computer,result(1:end-1));                
-            end
-        end
-        
         %%%%%%%%%%%%%%%%%%%%
         %% Task executing %%
         %%%%%%%%%%%%%%%%%%%%
@@ -577,6 +550,74 @@ classdef partoolsfeval < handle;
             end
             out=task.out;
         end
+        
+        %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+        %% Task executing in cluster %%
+        %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+                
+        function createQsubScript(obj,numWorkers,executePath,email)
+            
+            qsubName=fullfile(obj.allTasksFolder,'qsubTaskExecution.sh');
+            [isLocal,computer,filename]=parseName(obj,obj.allTasksFolder);
+            if isLocal
+                fh=fopen(qsubName,'w');
+            else
+                localname=tempname;
+                fh=fopen(localname,'w');
+            end
+            fprintf(fh,'### Job name\n');
+            fprintf(fh,'#PBS -N pbsjob_qsubTaskExecution\n');
+            fprintf(fh,'### Output and error paths\n');
+            % qsub does know hoe to interprete '~/'
+            fprintf(fh,'#PBS -o %s\n',regexprep(filename,'^~/',''));
+            fprintf(fh,'#PBS -e %s\n',regexprep(filename,'^~/',''));
+            fprintf(fh,'### Termination warning\n');
+            fprintf(fh,'#PBS -m e\n');
+            fprintf(fh,'#PBS -M %s\n',email);
+            fprintf(fh,'### Resources\n');
+            fprintf(fh,'#PBS -l select=1:ncpus=%d\n',2*numWorkers);
+            fprintf(fh,'module list\n');
+            fprintf(fh,'qstat -u $USER\n');
+            fprintf(fh,'matlab -nosplash -noFigureWindows -r "cd(''%s'');obj=partoolsfeval(''%s'');executeTasksParallel(obj,true,%d); quit"\n',executePath,filename,numWorkers);
+            fprintf(fh,'qstat -u $USER\n');
+            fclose(fh);
+            if ~isLocal
+                [success,cmd,rc,result]=nonatomicCopyToRemote(obj,localname,qsubName);
+                delete(localname);
+                if ~success
+                    disp(cmd);
+                    disp(result);
+                    error('createQsubScript: unable to create "%s"\n',obj.allTasksFolder);
+                end
+            end
+
+        end
+        
+        function [success,cmd,rc,result]=callQsubScript(obj)
+            qsubName=fullfile(obj.allTasksFolder,'qsubTaskExecution.sh');
+            [isLocal,computer,filename]=parseName(obj,qsubName);
+            cmd=sprintf('qsub %s',filename);
+            lcmd=cmd;
+            if ~isLocal
+                cmd=sprintf('ssh %s ''bash -c "%s"''',computer,regexprep(lcmd,'^~/',''));
+                if obj.verboseLevel>1
+                    fprintf('callQsubScript: remote execution at "%s"\n',computer);
+                end
+            end
+            [rc,result]=system(cmd);
+            success=(rc==0);
+            if ~success
+                disp(cmd);
+                disp(result);
+                error('callQsubScript: error in executing "%s"\n',cmd);
+            end            
+            fprintf('callQsubScript: success in running "%s"\n',lcmd);
+            fprintf('                qsub returned "%s"\n',regexprep(result,'\n$',''));
+        end
+        
+        
+        
+        
     end
     
 end

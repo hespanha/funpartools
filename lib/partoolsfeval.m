@@ -517,6 +517,7 @@ classdef partoolsfeval < handle;
                 pc=parcluster('local');
                 pc.NumWorkers=numWorkers;
                 pc.JobStorageLocation=fullfile(obj.allTasksFolder,'clusterJobStorageLocation');
+                [success,cmd,rc,result]=atomicCreateFolder(obj,pc.JobStorageLocation);                
                 pool=parpool(pc);
             end
             numWorkers=min(pool.NumWorkers,numWorkers);

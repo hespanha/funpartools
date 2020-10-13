@@ -516,7 +516,9 @@ classdef partoolsfeval < handle;
                 % if not, create one with as many workers as possible, up to numWorkers
                 pc=parcluster('local');
                 pc.NumWorkers=numWorkers;
-                joblocation=fullfile(obj.allTasksFolder,'clusterJobStorageLocation');
+                joblocation=tempname(obj.allTasksFolder);
+                [fo,fi]=fileparts(joblocation);
+                joblocation=fullfile(fo,['tmp_',fi]);
                 [success,cmd,rc,result]=atomicCreateFolder(obj,joblocation);                
                 pc.JobStorageLocation=joblocation;
                 pool=parpool(pc);
@@ -528,11 +530,13 @@ classdef partoolsfeval < handle;
                 parfor i=1:numWorkers
                     h{i,1}=executeTasksOneWorker(obj);
                 end 
+                rmdir(joblocation);
             else
                 % parallel execution with parfeval, nonblocking
                 for i=1:numWorkers
                     h{i,1}=parfeval(pool,@executeTasksOneWorker,1,obj);
                 end
+                fprintf('executeTasksParallel: temporary folde "%s" will eventually need to be removed\n',tempname);
             end
         end
         

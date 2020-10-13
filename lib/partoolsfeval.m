@@ -103,6 +103,13 @@ classdef partoolsfeval < handle;
         % returns task handle, given task folder filename
             h=str2double(name);
         end
+        function h=taskDone2handle(obj,folder,name)
+        % returns task handle, given task folder filename
+            [fl,fn]=fileparts(folder);
+            h=taskFolder2handle(obj,fl,fn);
+        end
+        
+        % Wildcards
         function wc=taskFolderWildCard(obj)
         % returns wildcard to look for existing task folders
             wc=obj.allTasksFolder;
@@ -112,9 +119,15 @@ classdef partoolsfeval < handle;
             wc=fullfile(obj.allTasksFolder,'*','waiting.mat');
         end
         function wc=executingWildcard(obj)
-        % returns wildcard to look for tasks waiting to be executed
+        % returns wildcard to look for tasks being executed
             wc=fullfile(obj.allTasksFolder,'*','executing.mat');
         end
+        function wc=doneWildcard(obj)
+        % returns wildcard to look for tasks completed
+            wc=fullfile(obj.allTasksFolder,'*','done.mat');
+        end
+        
+        % Filenames
         function fn=creationFilename(obj,h)
         % returns creation filename, given the task handle
             fn=fullfile(taskFoldername(obj,h),'created.mat');
@@ -140,7 +153,7 @@ classdef partoolsfeval < handle;
             fn=fullfile(folder,'done.mat');
         end
         function fn=doneFilename(obj,h)
-        % returns waiting filename, given creation filename
+        % returns done filename, given creation filename
             fn=fullfile(taskFoldername(obj,h),'done.mat');
         end
         
@@ -559,7 +572,7 @@ classdef partoolsfeval < handle;
                 ld=load(localname);
                 delete(localname);
             end
-            task=ld.task
+            task=ld.task;
             timing=task.timing;
             timing.preRetrieve=t0;
             timing.postRetrieve=clock();
@@ -663,6 +676,27 @@ classdef partoolsfeval < handle;
                     error('executing2waiting: command "%s" failed with rc=%d (task may havecompleted)\n',cmd,rc);
                 end
             end
+        end
+   
+        function h=getTasksDone(obj)
+        % h=getTasksDone(obj)
+        %
+        % for handles of all tasks done
+            t0=clock();
+            doneWC=doneWildcard(obj);
+            [isLocal,computer,filename]=parseName(obj,doneWC);
+            if isLocal
+                thisDir=@dir;
+            else
+                thisDir=@(pth)dirLimited(obj,pth);
+            end
+            
+            files=thisDir(doneWC);
+            h=nan(length(files),1);
+            for i=1:length(files)
+                h(i)=taskDone2handle(obj,files(i).folder,files(i).name);
+            end
+            h=sort(h);
         end
         
     end

@@ -522,9 +522,8 @@ classdef partoolsfeval < handle;
                 joblocation=fullfile(fo,['tmp_',fi]);
                 [success,cmd,rc,result]=atomicCreateFolder(obj,joblocation);                
                 pc.JobStorageLocation=joblocation;
-                pool=parpool(pc);
+                pool=parpool(pc,numWorkers);
             end
-            numWorkers=min(pool.NumWorkers,numWorkers);
             h=cell(numWorkers,1);
             if blocking
                 % parallel execution with parfor, only returns when all workers are done

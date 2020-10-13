@@ -516,8 +516,9 @@ classdef partoolsfeval < handle;
                 % if not, create one with as many workers as possible, up to numWorkers
                 pc=parcluster('local');
                 pc.NumWorkers=numWorkers;
-                pc.JobStorageLocation=fullfile(obj.allTasksFolder,'clusterJobStorageLocation');
-                [success,cmd,rc,result]=atomicCreateFolder(obj,pc.JobStorageLocation);                
+                joblocation=fullfile(obj.allTasksFolder,'clusterJobStorageLocation');
+                [success,cmd,rc,result]=atomicCreateFolder(obj,joblocation);                
+                pc.JobStorageLocation=joblocation;
                 pool=parpool(pc);
             end
             numWorkers=min(pool.NumWorkers,numWorkers);

@@ -123,15 +123,19 @@ classdef partoolsfeval < handle;
         % returns waiting filename, given creation filename
             fn=fullfile(taskFoldername(obj,h),'waiting.mat');
         end
-        function fn=waiting2executing(obj,folder,filename)
+        function fn=waiting2executingFilename(obj,folder,filename)
         % returns executing filename, given waiting filename
             fn=fullfile(folder,'executing.mat');
         end
-        function fn=waiting2executed(obj,folder,filename)
+        function fn=executing2waitingFilename(obj,folder,filename)
+        % returns executing filename, given waiting filename
+            fn=fullfile(folder,'waiting.mat');
+        end
+        function fn=waiting2executedFilename(obj,folder,filename)
         % returns executed filename, given waiting filename
             fn=fullfile(folder,'executed.mat');
         end
-        function fn=waiting2done(obj,folder,filename)
+        function fn=waiting2doneFilename(obj,folder,filename)
         % returns done filename, given waiting filename
             fn=fullfile(folder,'done.mat');
         end
@@ -267,8 +271,14 @@ classdef partoolsfeval < handle;
             k=find(~cellfun('isempty',tokens));
             files=struct('name',{},'folder',{},'date',{},'bytes',{},'isdir',{},'datenum',{});
             for i=1:length(k)
-                files(i).name=tokens{k(i)}{1}{4};
-                files(i).folder=name;
+                if tokens{k(i)}{1}{4}(1)=='/'
+                    % name includes path
+                    [files(i).folder,nm,ext]=fileparts(tokens{k(i)}{1}{4});
+                    files(i).name=[nm,ext];
+                else
+                    files(i).name=tokens{k(i)}{1}{4};
+                    files(i).folder=name;
+                end
                 files(i).isdir=(tokens{k(i)}{1}{1}=='d');   
             end
             if obj.verboseLevel>2
@@ -437,7 +447,7 @@ classdef partoolsfeval < handle;
                     return
                 end
                 wn=fullfile(f(1).folder,f(1).name);
-                en=waiting2executing(obj,f(1).folder,f(1).name);
+                en=waiting2executingFilename(obj,f(1).folder,f(1).name);
                 [success,cmd,rc]=atomicRename(obj,wn,en);
                 if ~success
                     % error, someone else grabed this one for execution, try next one
@@ -463,12 +473,12 @@ classdef partoolsfeval < handle;
                     task.err=me;
                     disp(me);
                 end
-                d1n=waiting2executed(obj,f(1).folder,f(1).name);
+                d1n=waiting2executedFilename(obj,f(1).folder,f(1).name);
                 task.timing.elapsedLoad=etime(task.timing.postLoad,task.timing.preLoad);
                 task.timing.elapsedCompute=etime(task.timing.postCompute,task.timing.postLoad);
                 % create with a temporary same 
                 save(d1n,'task');
-                d2n=waiting2done(obj,f(1).folder,f(1).name);
+                d2n=waiting2doneFilename(obj,f(1).folder,f(1).name);
                 [success,cmd,rc]=atomicRename(obj,d1n,d2n);
                 % past this, task timings will not be saved
                 task.timing.postSave=clock();
@@ -504,7 +514,10 @@ classdef partoolsfeval < handle;
             pool=gcp('nocreate');
             if isempty(pool)
                 % if not, create one with as many workers as possible, up to numWorkers
-                pool=parpool([1,numWorkers]);
+                pc=parcluster('local');
+                pc.NumWorkers=numWorkers;
+                pc.JobStorageLocation=fullfile(obj.allTasksFolder,'clusterJobStorageLocation');
+                pool=parpool(pc);
             end
             numWorkers=min(pool.NumWorkers,numWorkers);
             h=cell(numWorkers,1);
@@ -615,8 +628,36 @@ classdef partoolsfeval < handle;
             fprintf('                qsub returned "%s"\n',regexprep(result,'\n$',''));
         end
         
-        
-        
+        function executing2waiting(obj)
+        % turn file 'executing' into 'waiting' to be executed. This is needed if the workers died.
+            
+            t0=clock();
+            executingWC=executingWildcard(obj);
+            [isLocal,computer,filename]=parseName(obj,executingWC);
+            if isLocal
+                thisDir=@dir;
+            else
+                thisDir=@(pth)dirLimited(obj,pth);
+            end
+            
+            we=thisDir(executingWC);
+            fprintf('executing2waiting: %d files need to be renamed\n',length(we));
+            for i=1:length(we)
+                if ~isLocal
+                    we(i).folder=[computer,':',we(i).folder];
+                end
+                oldName=fullfile(we(i).folder,we(i).name);
+                newName=executing2waitingFilename(obj,we(i).folder,we(i).name);
+                [success,cmd,rc,result]=atomicRename(obj,oldName,newName);
+                if success
+                    fprintf('executing2waiting: successfully moved "%s"\n',oldName);
+                    fprintf('                                   to "%s"\n',newName);
+                else
+                    disp(result)
+                    error('executing2waiting: command "%s" failed with rc=%d (task may havecompleted)\n',cmd,rc);
+                end
+            end
+        end
         
     end
     

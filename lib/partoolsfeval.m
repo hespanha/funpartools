@@ -8,7 +8,7 @@ classdef partoolsfeval < handle;
         % time to sleep, while waiting
         waitTimeSec=1;
         
-        verboseLevel=1;
+        verboseLevel=20;
     end
     
     methods;

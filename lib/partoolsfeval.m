@@ -517,6 +517,7 @@ classdef partoolsfeval < handle;
                 pc=parcluster('local');
                 pc.NumWorkers=numWorkers;
                 joblocation=tempname(obj.allTasksFolder);
+                joblocation=regexprep(joblocation,'^~/',[getenv('HOME'),'/']);
                 [fo,fi]=fileparts(joblocation);
                 joblocation=fullfile(fo,['tmp_',fi]);
                 [success,cmd,rc,result]=atomicCreateFolder(obj,joblocation);                

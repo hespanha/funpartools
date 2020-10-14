@@ -536,6 +536,7 @@ classdef partoolsfeval < handle;
                 [success,cmd,rc,result]=atomicCreateFolder(obj,joblocation);                
                 pc.JobStorageLocation=joblocation;
                 pool=parpool(pc,numWorkers);
+                disp(pool)
             end
             h=cell(numWorkers,1);
             if blocking

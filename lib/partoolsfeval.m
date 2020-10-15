@@ -409,10 +409,14 @@ classdef partoolsfeval < handle;
            error('addTask failed too many times (%d)\n',c);
         end
         
-        function waitForTasks(obj)
+        function waitForTasks(obj,timeout)
         % waitForTasks(obj)
         %
         % Waits until all the tasks have been completed
+            if nargin<2
+                timeout=inf;
+            end
+            
             t0=clock();
             waitingWC=waitingWildcard(obj);
             executingWC=executingWildcard(obj);
@@ -423,7 +427,8 @@ classdef partoolsfeval < handle;
                 thisDir=@(pth)dirLimited(obj,pth);
             end
             
-            while 1
+            t1=clock();
+            while etime(clock,t1)<timeout
                 wf=thisDir(waitingWC);
                 ef=thisDir(executingWC);
                 if isempty(wf) && isempty(ef)
@@ -543,6 +548,8 @@ classdef partoolsfeval < handle;
                 % parallel execution with parfor, only returns when all workers are done
                 parfor i=1:numWorkers
                     h{i,1}=executeTasksOneWorker(obj);
+                    % avoid race conditions, e.g., in selecting pedigree names
+                    pause(.1+2*rand(1)); 
                 end 
                 rmdir(joblocation);
             else
@@ -608,7 +615,7 @@ classdef partoolsfeval < handle;
             fprintf(fh,'#PBS -m e\n');
             fprintf(fh,'#PBS -M %s\n',email);
             fprintf(fh,'### Resources\n');
-            fprintf(fh,'#PBS -l select=1:ncpus=%d\n',2*numWorkers);
+            fprintf(fh,'#PBS -l select=1:ncpus=%d -lplace=excl\n',2*numWorkers);
             fprintf(fh,'module list\n');
             fprintf(fh,'qstat -u $USER\n');
             fprintf(fh,'matlab -nosplash -noFigureWindows -r "cd(''%s'');obj=partoolsfeval(''%s'');executeTasksParallel(obj,true,%d); quit"\n',executePath,filename,numWorkers);
@@ -648,8 +655,9 @@ classdef partoolsfeval < handle;
             fprintf('                qsub returned "%s"\n',regexprep(result,'\n$',''));
         end
         
-        function executing2waiting(obj)
-        % turn file 'executing' into 'waiting' to be executed. This is needed if the workers died.
+        function allExecuting2waiting(obj)
+        % turns all files 'executing' into 'waiting' to be
+        % executed. This is needed if the workers died.
             
             t0=clock();
             executingWC=executingWildcard(obj);
@@ -670,11 +678,34 @@ classdef partoolsfeval < handle;
                 newName=executing2waitingFilename(obj,we(i).folder,we(i).name);
                 [success,cmd,rc,result]=atomicRename(obj,oldName,newName);
                 if success
-                    fprintf('executing2waiting: successfully moved "%s"\n',oldName);
-                    fprintf('                                   to "%s"\n',newName);
+                    fprintf('executing2waiting: %4d/%4d successfully moved "%s"\n',...
+                            i,length(we),oldName);
+                    fprintf('                                             to "%s"\n',newName);
                 else
                     disp(result)
                     error('executing2waiting: command "%s" failed with rc=%d (task may havecompleted)\n',cmd,rc);
+                end
+            end
+        end
+   
+        function done2waiting(obj,h)
+        % turns one task from 'done' into 'waiting' to be
+        % executed. This is needed if the output needs to be reocmputed
+            
+            t0=clock();
+            for i=1:length(h)
+                fw=waitingFilename(obj,h(i));
+                [fl,fn]=fileparts(fw);
+                fd=waiting2doneFilename(obj,fl,fn);
+                
+                [success,cmd,rc,result]=atomicRename(obj,fd,fw);
+                if success
+                    fprintf('done2waiting: %4d/%4d successfully moved "%s"\n',...
+                            i,length(h),fd);
+                    fprintf('                                        to "%s"\n',fw);
+                else
+                    disp(result)
+                    fprintf('done2waiting: command "%s" failed with rc=%d\n',cmd,rc);
                 end
             end
         end

@@ -572,13 +572,19 @@ classdef partoolsfeval < handle;
             fn=doneFilename(obj,h);
             [isLocal,computer,filename]=parseName(obj,fn);
             t0=clock();
-            if isLocal
-                ld=load(fn);
-            else
-                localname=[tempname,'.mat'];
-                nonatomicCopyFromRemote(obj,fn,localname);
-                ld=load(localname);
-                delete(localname);
+            try
+                if isLocal
+                    ld=load(fn);
+                else
+                    localname=[tempname,'.mat'];
+                    nonatomicCopyFromRemote(obj,fn,localname);
+                    ld=load(localname);
+                    delete(localname);
+                end
+            catch me
+                fprintf('getOutput: file "%s" not found\n',fn);
+                ld.task.err=me;
+                ld.task.timing=struct();
             end
             task=ld.task;
             timing=task.timing;

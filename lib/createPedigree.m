@@ -24,7 +24,8 @@ function [filename,pedigreeName,pedigreeNameMat,...
 %    1) Keeping track of the pedigree of each file .
 %
 %       The actualy pedigree information is saved in an ASCII file
-%       with extension '-pedigree.html'
+%       with extension '-pedigree.html' and in a matlab file with
+%       extension '-pedigree.mat'
 %
 %    2) Avoid keeping duplicate copies of files with the same pedigree
 %
@@ -81,6 +82,8 @@ function [filename,pedigreeName,pedigreeNameMat,...
 
 verboseLevel=0;  % 0 none, 1 less, 2 more
 
+useTemporaryPedigree=true;
+
 if nargin<3 & nargin>1
     caller=fileClass;
 end
@@ -136,13 +139,22 @@ basenameUnique=sprintf(timeStampFormat,basename,...
                  datestr(floor(timestamp),dateFormat),...
                  1e6*(timestamp(end)-floor(timestamp(end))));
 filename=sprintf('%s%s%s',path,basenameUnique,extension);
-pedigreeName=sprintf('%s%s%s',path,basenameUnique,pedigreeSuffix);
 
 %% Creates pedrigree file
 
-fid=fopen(pedigreeName,'w+');
-if fid<0
-    error('createPedigree: unable to create file ''%s''\n',pedigreeName);
+pedigreeName=sprintf('%s%s%s',path,basenameUnique,pedigreeSuffix);
+if useTemporaryPedigree
+    % creates a pedigree as a (unique) temporary file to check if one already exists
+    tempPedigreeName=tempname();
+    fid=fopen(tempPedigreeName,'w+');
+    if fid<0
+        error('createPedigree: unable to create file ''%s''\n',tempPedigreeName);
+    end
+else
+    fid=fopen(pedigreeName,'w+');
+    if fid<0
+        error('createPedigree: unable to create file ''%s''\n',pedigreeName);
+    end
 end
 fprintf(fid,'<STRONG>%s = %s(...)</STRONG>',fileClass,caller);
 fprintf(fid,'\n<UL>\n   <LI><EM>~</EM> = "%s"<BR>\n',path);
@@ -312,11 +324,15 @@ fclose(fid);
 %% Look for existing pedigree
 wildcard=sprintf(pedigreeWildcard,path,basename,pedigreeSuffix);
 files=dir(wildcard);
-thisPedigree=fileread(pedigreeName);
+if useTemporaryPedigree
+    thisPedigree=fileread(tempPedigreeName);    
+else
+    thisPedigree=fileread(pedigreeName);
+end
 reusingPedigree=false;
 for i=1:length(files)
     thisName=[path,'/',files(i).name];
-    if strcmp(pedigreeName,thisName) 
+    if ~useTemporaryPedigree && strcmp(pedigreeName,thisName) 
         % same file?
         continue;
     end
@@ -334,7 +350,11 @@ for i=1:length(files)
         if verboseLevel>0
             fprintf('createPedigree: pedigree already exists, reusing it\n');
         end
-        delete(pedigreeName);
+        if useTemporaryPedigree
+            delete(useTemporaryPedigree);
+        else
+            delete(pedigreeName);
+        end
         pedigreeName=thisName;
         basenameUnique=['/',files(i).name(1:end-length(pedigreeSuffix))];
         filename=sprintf('%s%s%s',path,basenameUnique,extension);
@@ -346,6 +366,14 @@ for i=1:length(files)
             disp(thisPedigree)
             disp(pedigree)
         end
+    end
+end
+
+if useTemporaryPedigree && ~reusingPedigree
+    success=movefile(tempPedigreeName,pedigreeName);
+    delete(tempPedigreeName);
+    if ~success
+        error('createPedigree: unable to create file ''%s''\n',pedigreeName);
     end
 end
 

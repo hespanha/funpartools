@@ -420,9 +420,10 @@ if ~isempty(pedigreeClass)
      pedigreeSuffix,pedigreeSuffixMat,...
      dateFormat,basenameUniqueRegexp,timeStampFormat,pedigreeWildcard,...
      reusingPedigree...
-    ]=createPedigree(pedigreeClass,parameters,callerName_);
+    ]=createPedigree(pedigreeClass,parameters,callerName_,true);
     assignin('caller','className_',className);
     assignin('caller','pedigreeName_',pedigreeName);
+    assignin('caller','pedigreeNameMat_',pedigreeNameMat);
     for i_=length(callerVariables):-1:1
         if isfield(callerVariables{i_},'DefaultValue') && ...
                 strcmp(class(callerVariables{i_}.DefaultValue),'outputWithPedigree')
@@ -434,6 +435,7 @@ else
     reusingPedigree=false;
     assignin('caller','className_','');
     assignin('caller','pedigreeName_','');
+    assignin('caller','pedigreeNameMat_','');
 end
 
 %% Check for admissible values

@@ -2,8 +2,10 @@ function [filename,pedigreeName,pedigreeNameMat,...
           pedigreeSuffix,pedigreeSuffixMat,...
           dateFormat,basenameUniqueRegexp,timeStampFormat,pedigreeWildcard,...
           reusingPedigree...
-         ]=createPedigree(fileClass,parameters,caller)
+         ]=createPedigree(fileClass,parameters,caller,temporary)
 % [filename,pedigreeName,pedigreeNameMat]=createPedigree(fileClass,parameters)
+% [filename,pedigreeName,pedigreeNameMat]=createPedigree(fileClass,parameters,caller)
+% [filename,pedigreeName,pedigreeNameMat]=createPedigree(fileClass,parameters,caller,temporary)
 %
 % This function helps manage file classes.
 %
@@ -43,6 +45,19 @@ function [filename,pedigreeName,pedigreeNameMat,...
 %              were used to create the file. Typically created by
 %              the function setParameters() or manually constructed
 %              by the user
+%
+% caller (optional) - function asking to create the pedigree 
+%                     [by default this information is taken from dbstack()]
+%
+% temporary (optional) - When true, a temporary pedigree is created
+%              that cannot be found by subsequent calls to
+%              createPedigree() until finalizePedigree is called.
+%
+%              This can be used to prevent a function from trying to
+%              retrive data associated with a pedigree, for which data
+%              has not yet been generated data.
+%
+%              [by default this parameter is false]
 %
 % Output parameters:
 % -----------------
@@ -86,6 +101,10 @@ useTemporaryPedigree=true;
 
 if nargin<3 & nargin>1
     caller=fileClass;
+end
+
+if nargin<4
+    temporary=false;
 end
 
 callerName=dbstack(1);
@@ -151,9 +170,14 @@ if useTemporaryPedigree
         error('createPedigree: unable to create file ''%s''\n',tempPedigreeName);
     end
 else
-    fid=fopen(pedigreeName,'w+');
+    if temporary
+        fn=[pedigreeName,'~'];
+    else
+        fn=pedigreeName;
+    end
+    fid=fopen(fn,'w+');
     if fid<0
-        error('createPedigree: unable to create file ''%s''\n',pedigreeName);
+        error('createPedigree: unable to create file ''%s''\n',fn);
     end
 end
 fprintf(fid,'<STRONG>%s = %s(...)</STRONG>',fileClass,caller);
@@ -351,7 +375,7 @@ for i=1:length(files)
             fprintf('createPedigree: pedigree already exists, reusing it\n');
         end
         if useTemporaryPedigree
-            delete(useTemporaryPedigree);
+            delete(tempPedigreeName);
         else
             delete(pedigreeName);
         end
@@ -370,10 +394,14 @@ for i=1:length(files)
 end
 
 if useTemporaryPedigree && ~reusingPedigree
-    success=movefile(tempPedigreeName,pedigreeName);
-    delete(tempPedigreeName);
+    if temporary
+        fn=[pedigreeName,'~'];
+    else
+        fn=pedigreeName;
+    end
+    success=movefile(tempPedigreeName,fn);
     if ~success
-        error('createPedigree: unable to create file ''%s''\n',pedigreeName);
+        error('createPedigree: unable to create file ''%s''\n',fn);
     end
 end
 
@@ -389,7 +417,12 @@ for i=1:length(names)
 end
 
 pedigreeNameMat=sprintf('%s%s%s',path,basenameUnique,pedigreeSuffixMat);
-save(pedigreeNameMat,'-v7.3',...
+if temporary
+    fn=[pedigreeNameMat,'~'];
+else
+    fn=pedigreeNameMat;
+end
+save(fn,'-v7.3',...
      'parameters','basename','basenameUnique','pedigreeName','pedigreeNameMat');
 
 return

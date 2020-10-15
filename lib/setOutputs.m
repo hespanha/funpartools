@@ -31,6 +31,7 @@ callerName_=callerName_(1).name;
 if evalin('caller','exist(''pedigreeClass'',''var'')')
     pedigreeClass=evalin('caller','pedigreeClass');
     pedigreeName=evalin('caller','pedigreeName_');
+    pedigreeNameMat=evalin('caller','pedigreeNameMat_');
     className=evalin('caller','className_');
 else
     pedigreeClass='';
@@ -63,5 +64,9 @@ end
 
 if nargout>length(vargout)
     error('setOutputs: %d outputs declared, but function was called with %d outputs\n',length(vargout),nargout);
+end
+
+if ~isempty(pedigreeClass)
+    finalizePedigree(pedigreeName,pedigreeNameMat);
 end
 

@@ -640,6 +640,8 @@ classdef partoolsfeval < handle;
                     end
                     result(end)='/'; % replace final newline by '/'
                     pth=regexprep(filename,'^~/',result);
+                else
+                    pth=filename;
                 end
                 fprintf(fh,'#PBS -o %s\n',pth);
                 fprintf(fh,'#PBS -e %s\n',pth);

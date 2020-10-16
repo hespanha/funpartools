@@ -95,7 +95,7 @@ function [filename,pedigreeName,pedigreeNameMat,...
 % along with TensCalc.  If not, see <http://www.gnu.org/licenses/>.
 
 
-verboseLevel=0;  % 0 none, 1 less, 2 more
+verboseLevel=3;  % 0 none, 1 less, 2 more
 
 useTemporaryPedigree=true;
 
@@ -170,7 +170,10 @@ filename=[path,basenameUnique,extension];
 pedigreeName=[path,basenameUnique,pedigreeSuffix];
 if useTemporaryPedigree
     % creates a pedigree as a (unique) temporary file to check if one already exists
-    tempPedigreeName=tempname();
+    tempPedigreeName=tempname('.');
+    if verboseLevel>1
+        fprintf('createPedigree: creating pedigree file ''%s''\n',tempPedigreeName)
+    end
     fid=fopen(tempPedigreeName,'w+');
     if fid<0
         error('createPedigree: unable to create file ''%s''\n',tempPedigreeName);
@@ -180,6 +183,9 @@ else
         fn=[pedigreeName,'~'];
     else
         fn=pedigreeName;
+    end
+    if verboseLevel>1
+        fprintf('createPedigree: creating pedigree file ''%s''\n',fn)
     end
     fid=fopen(fn,'w+');
     if fid<0
@@ -192,6 +198,9 @@ fprintf(fid,'\n<UL>\n   <LI><EM>~</EM> = "%s"<BR>\n',path);
 names=fieldnames(parameters);
 pedigrees2include={};
 for i=1:length(names)
+    if verboseLevel>2
+        fprintf('createPedigree: saving parameter ''%s''\n',names{i})
+    end
     if ismember(names{i},{'executeScript','verboseLevel'})
         continue
     end 

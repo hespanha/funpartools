@@ -70,7 +70,7 @@ for i=1:length(callAndStoreSave_)
         disp(callAndStoreSave_(i).varargin);
     end
 end
-fprintf('callAndStore: calling function ''%s'' and storing result it in entry %d\n',...
+fprintf('callAndStore: calling function ''%s'' and storing results in entry %d\n',...
         funName,length(callAndStoreSave_)+1);
 try
     [varargout{1:nargout}]=fun(varargin{:});

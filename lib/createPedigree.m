@@ -279,6 +279,9 @@ for i=1:length(names)
             error('createPedigree: Array of pedigrees not yet implemented\n');
             
         elseif ischar(vj) || strcmp(class(vj),'outputWithPedigree')
+            if verboseLevel>3
+                fprintf('createPedigree: starting to save char...');
+            end
             % is the parameter a filename with pedigree?
             if j==1 & length(value)>1
                 fprintf(fid,'<UL>');
@@ -288,6 +291,9 @@ for i=1:length(names)
                 vj=vj.fileName;
             else
                 pedigree=[regexp(vj,basenameUniqueRegexp,'match','once'),pedigreeSuffix];
+            end
+            if verboseLevel>3
+                fprintf(' starting to check file...');
             end
             if exist(pedigree,'file')
                 if verboseLevel>1
@@ -318,6 +324,9 @@ for i=1:length(names)
                     end
                 end
             else
+                if verboseLevel>3
+                    fprintf(' not a file...');
+                end
                 if isempty(vj)
                     vj='[empty string]';
                 else
@@ -335,6 +344,9 @@ for i=1:length(names)
                         fprintf(fid,'<BR>\n');
                     end
                 end
+            end
+            if verboseLevel>3
+                fprintf('done with char\n');
             end
         elseif strcmp(class(vj),'table')
             if j==1
@@ -411,8 +423,8 @@ for i=1:length(files)
     else
         if verboseLevel>1
             fprintf('\t different pedigrees\n');
-            disp(thisPedigree)
-            disp(pedigree)
+            %disp(thisPedigree)
+            %disp(pedigree)
         end
     end
 end

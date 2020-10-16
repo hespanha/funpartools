@@ -335,7 +335,7 @@ classdef partoolsfeval < handle;
                     fprintf('saved locally (%.3f sec)... ',etime(clock,t0));                
                 end
             else
-                localname=tempname('.');
+                localname=myTempName();
                 save(localname,'task');
                 if obj.verboseLevel>2
                     fprintf('saved locally (%.3f sec)... ',etime(clock,t0));                

@@ -335,7 +335,7 @@ classdef partoolsfeval < handle;
                     fprintf('saved locally (%.3f sec)... ',etime(clock,t0));                
                 end
             else
-                localname=[tempname('.'),'.mat'];
+                localname=tempname('.');
                 save(localname,'task');
                 if obj.verboseLevel>2
                     fprintf('saved locally (%.3f sec)... ',etime(clock,t0));                
@@ -580,7 +580,7 @@ classdef partoolsfeval < handle;
                 if isLocal
                     ld=load(fn);
                 else
-                    localname=[tempname('.'),'.mat'];
+                    localname=myTempName();
                     nonatomicCopyFromRemote(obj,fn,localname);
                     ld=load(localname);
                     delete(localname);
@@ -612,7 +612,7 @@ classdef partoolsfeval < handle;
             if isLocal
                 fh=fopen(qsubName,'w');
             else
-                localname=tempname('.');
+                localname=myTempName();
                 fh=fopen(localname,'w');
             end
             fprintf(fh,'### Job name\n');

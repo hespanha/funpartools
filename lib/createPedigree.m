@@ -170,7 +170,7 @@ filename=[path,basenameUnique,extension];
 pedigreeName=[path,basenameUnique,pedigreeSuffix];
 if useTemporaryPedigree
     % creates a pedigree as a (unique) temporary file to check if one already exists
-    tempPedigreeName=tempname('.');
+    tempPedigreeName=myTempName();
     if verboseLevel>1
         fprintf('createPedigree: creating pedigree file ''%s''\n',tempPedigreeName)
     end

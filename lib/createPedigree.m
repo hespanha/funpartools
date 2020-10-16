@@ -295,7 +295,7 @@ for i=1:length(names)
             if verboseLevel>3
                 fprintf(' starting to check file "%s"...',pedigree);
             end
-            if exist(pedigree,'file')
+            if ~strcmp(pedigree,pedigreeSuffix) && exist(pedigree,'file')
                 if verboseLevel>1
                     fprintf('createPedigree: found pedigree for parameter value ''%s''\n',vj)
                 end

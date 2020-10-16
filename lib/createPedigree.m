@@ -132,21 +132,27 @@ end
 
 %% Parse fileClass
 basename=fileClass;
-k=max(find(basename=='/'));
-if isempty(k)
+[path,basename,extension]=fileparts(basename);
+basename=['/',basename];
+if isempty(path)
     path='.';
-    basename=['/',basename];
-else
-    path=basename(1:k-1);
-    basename=basename(k:end);
 end
-k=max(find(basename=='.'));
-if isempty(k)
-    extension='';
-else
-    extension=basename(k:end);
-    basename=basename(1:k-1);
-end
+
+% k=max(find(basename=='/'));
+% if isempty(k)
+%     path='.';
+%     basename=['/',basename];
+% else
+%     path=basename(1:k-1);
+%     basename=basename(k:end);
+% end
+% k=max(find(basename=='.'));
+% if isempty(k)
+%     extension='';
+% else
+%     extension=basename(k:end);
+%     basename=basename(1:k-1);
+% end
 
 %path
 %basename
@@ -155,13 +161,13 @@ end
 %% Creates unique filename
 timestamp=clock;
 basenameUnique=sprintf(timeStampFormat,basename,...
-                 datestr(floor(timestamp),dateFormat),...
-                 1e6*(timestamp(end)-floor(timestamp(end))));
-filename=sprintf('%s%s%s',path,basenameUnique,extension);
+                       datestr(floor(timestamp),dateFormat),...
+                       1e6*(timestamp(end)-floor(timestamp(end))));
+filename=[path,basenameUnique,extension];
 
 %% Creates pedrigree file
 
-pedigreeName=sprintf('%s%s%s',path,basenameUnique,pedigreeSuffix);
+pedigreeName=[path,basenameUnique,pedigreeSuffix];
 if useTemporaryPedigree
     % creates a pedigree as a (unique) temporary file to check if one already exists
     tempPedigreeName=tempname();
@@ -381,7 +387,7 @@ for i=1:length(files)
         end
         pedigreeName=thisName;
         basenameUnique=['/',files(i).name(1:end-length(pedigreeSuffix))];
-        filename=sprintf('%s%s%s',path,basenameUnique,extension);
+        filename=[path,basenameUnique,extension];
         reusingPedigree=true;
         break
     else
@@ -416,7 +422,7 @@ for i=1:length(names)
     end
 end
 
-pedigreeNameMat=sprintf('%s%s%s',path,basenameUnique,pedigreeSuffixMat);
+pedigreeNameMat=[path,basenameUnique,pedigreeSuffixMat];
 if temporary
     fn=[pedigreeNameMat,'~'];
 else

@@ -95,7 +95,7 @@ function [filename,pedigreeName,pedigreeNameMat,...
 % along with TensCalc.  If not, see <http://www.gnu.org/licenses/>.
 
 
-verboseLevel=4;  % 0 none, 1 less, 2 more
+verboseLevel=0;  % 0 none, 1 less, 2 more
 
 useTemporaryPedigree=true;
 
@@ -290,12 +290,15 @@ for i=1:length(names)
                 pedigree=vj.pedigreeName;
                 vj=vj.fileName;
             else
-                pedigree=[regexp(vj,basenameUniqueRegexp,'match','once'),pedigreeSuffix];
+                pedigree=regexp(vj,basenameUniqueRegexp,'match','once');
+                if ~isempty(pedigree)
+                    pedigree=[pedigree,pedigreeSuffix];
+                end
             end
             if verboseLevel>3
                 fprintf(' starting to check file "%s"...',pedigree);
             end
-            if ~strcmp(pedigree,pedigreeSuffix) && exist(pedigree,'file')
+            if ~isempty(pedigree) && exist(pedigree,'file')
                 if verboseLevel>1
                     fprintf('createPedigree: found pedigree for parameter value ''%s''\n',vj)
                 end

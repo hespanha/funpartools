@@ -549,7 +549,7 @@ classdef partoolsfeval < handle;
                 parfor i=1:numWorkers
                     h{i,1}=executeTasksOneWorker(obj);
                     % avoid race conditions, e.g., in selecting pedigree names
-                    pause(.1+2*rand(1)); 
+                    pause(1.5+2*rand(1)); 
                 end 
                 if exist(joblocation,'dir')
                     rmdir(joblocation);
@@ -558,6 +558,8 @@ classdef partoolsfeval < handle;
                 % parallel execution with parfeval, nonblocking
                 for i=1:numWorkers
                     h{i,1}=parfeval(pool,@executeTasksOneWorker,1,obj);
+                    % avoid race conditions, e.g., in selecting pedigree names
+                    pause(1.5+2*rand(1)); 
                 end
                 fprintf('executeTasksParallel: temporary folder "%s" will eventually need to be removed\n',joblocation);
             end
@@ -627,10 +629,20 @@ classdef partoolsfeval < handle;
                 fprintf(fh,'#PBS -e %s\n',pth);
             else
                 % qsub interpretes "relative" paths from home
-                % directory, so '~/' is not needed
-                pth=regexprep(filename,'^~/','');
-                fprintf(fh,'#PBS -o %s:%s\n',computer,pth);
-                fprintf(fh,'#PBS -e %s:%s\n',computer,pth);
+                % directory, and does not understand ~/
+                if filename(1)=='~'
+                    cmd=sprintf('ssh %s echo $HOME',computer);
+                    [rc,result]=system(cmd);
+                    if rc
+                        disp(rc)
+                        disp(result)
+                        error('createQsubScript: taskFolders "%s" contains ~, but unable to get $HOME using "%s"',obj.allTasksFolder,cmd);
+                    end
+                    result(end)='/'; % replace final newline by '/'
+                    pth=regexprep(filename,'^~/',result);
+                end
+                fprintf(fh,'#PBS -o %s\n',pth);
+                fprintf(fh,'#PBS -e %s\n',pth);
             end
             fprintf(fh,'### Termination warning\n');
             fprintf(fh,'#PBS -m e\n');

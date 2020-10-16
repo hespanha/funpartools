@@ -479,7 +479,11 @@ classdef partoolsfeval < handle;
                 try
                     t0=clock();
                     ld=load(en);
-                    task=ld.task;
+                    if isfield(ld.task,'err')
+                        task=rmfield(ld.task,'err');
+                    else
+                        task=ld.task;
+                    end                        
                     task.timing.preLoad=t0;
                     h(end+1,1)=task.h;
                     task.timing.postLoad=clock();

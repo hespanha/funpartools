@@ -293,7 +293,7 @@ for i=1:length(names)
                 pedigree=[regexp(vj,basenameUniqueRegexp,'match','once'),pedigreeSuffix];
             end
             if verboseLevel>3
-                fprintf(' starting to check file...');
+                fprintf(' starting to check file "%s"...',pedigree);
             end
             if exist(pedigree,'file')
                 if verboseLevel>1

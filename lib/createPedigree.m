@@ -95,7 +95,7 @@ function [filename,pedigreeName,pedigreeNameMat,...
 % along with TensCalc.  If not, see <http://www.gnu.org/licenses/>.
 
 
-verboseLevel=3;  % 0 none, 1 less, 2 more
+verboseLevel=4;  % 0 none, 1 less, 2 more
 
 useTemporaryPedigree=true;
 
@@ -227,6 +227,9 @@ for i=1:length(names)
     end
 
     for j=1:length(value);
+        if verboseLevel>3
+            fprintf('createPedigree: saving cell element %d/%d\n',j,length(value));
+        end
         if iscell(value)
             vj=value{j};
         else
@@ -236,7 +239,13 @@ for i=1:length(names)
             vj=vj{1};
         end
         if strcmp(class(vj),'Tcalculus')
+            if verboseLevel>3
+                fprintf('createPedigree: starting to save Tcalculus...');
+            end
             vj=str(vj);
+            if verboseLevel>3
+                fprintf('done\n');
+            end
         end
         if strcmp(class(vj),'csparse')
             vj=str(vj);

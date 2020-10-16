@@ -551,13 +551,15 @@ classdef partoolsfeval < handle;
                     % avoid race conditions, e.g., in selecting pedigree names
                     pause(.1+2*rand(1)); 
                 end 
-                rmdir(joblocation);
+                if exist(joblocation,'dir')
+                    rmdir(joblocation);
+                end
             else
                 % parallel execution with parfeval, nonblocking
                 for i=1:numWorkers
                     h{i,1}=parfeval(pool,@executeTasksOneWorker,1,obj);
                 end
-                fprintf('executeTasksParallel: temporary folde "%s" will eventually need to be removed\n',tempname);
+                fprintf('executeTasksParallel: temporary folder "%s" will eventually need to be removed\n',joblocation);
             end
         end
         
@@ -614,9 +616,22 @@ classdef partoolsfeval < handle;
             fprintf(fh,'### Job name\n');
             fprintf(fh,'#PBS -N pbsjob_qsubTaskExecution\n');
             fprintf(fh,'### Output and error paths\n');
-            % qsub does know hoe to interprete '~/'
-            fprintf(fh,'#PBS -o %s\n',regexprep(filename,'^~/',''));
-            fprintf(fh,'#PBS -e %s\n',regexprep(filename,'^~/',''));
+            if isLocal
+                pth=regexprep(filename,'^~/',getenv('HOME'));
+                % qsub interpretes "relative" paths from working
+                % directory, so we add executePath
+                if pth(1)~='/'
+                    pth=fullfile(executePath,pth);
+                end
+                fprintf(fh,'#PBS -o %s\n',pth);
+                fprintf(fh,'#PBS -e %s\n',pth);
+            else
+                % qsub interpretes "relative" paths from home
+                % directory, so '~/' is not needed
+                pth=regexprep(filename,'^~/','');
+                fprintf(fh,'#PBS -o %s:%s\n',computer,pth);
+                fprintf(fh,'#PBS -e %s:%s\n',computer,pth);
+            end
             fprintf(fh,'### Termination warning\n');
             fprintf(fh,'#PBS -m e\n');
             fprintf(fh,'#PBS -M %s\n',email);

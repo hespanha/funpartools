@@ -10,14 +10,14 @@ function finalizePedigree(pedigreeName,pedigreeNameMat)
     [success,message]=movefile(old,pedigreeNameMat);
     if ~success
         disp(message)
-        error('finalizePedigree: unable to movefile(''%s'',''%s'')\n',pedigreeNameMat,new);
+        error('finalizePedigree: unable to movefile(''%s'',''%s'')\n',old,pedigreeNameMat);
     end
     
     old=[pedigreeName,'~'];
     [success,message]=movefile(old,pedigreeName);
     if ~success
         disp(message)
-        error('finalizePedigree: unable to movefile(''%s'',''%s'')\n',pedigreeName,new);
+        error('finalizePedigree: unable to movefile(''%s'',''%s'')\n',old,pedigreeName);
     end
     
 end

@@ -8,7 +8,7 @@ classdef partoolsfeval < handle;
         % time to sleep, while waiting
         waitTimeSec=1;
         
-        verboseLevel=20;
+        verboseLevel=0;
     end
     
     methods;
@@ -183,7 +183,11 @@ classdef partoolsfeval < handle;
             [isLocal,computer,filename]=parseName(obj,name);            
             if isLocal
                 % local filesysytem
-                success=mkdir(name);
+                [success,result]=mkdir(name);
+                if ~isempty(result)
+                    % warning: already exists
+                    success=false;
+                end
                 cmd='';
                 rc=nan;
                 result='';
@@ -441,6 +445,38 @@ classdef partoolsfeval < handle;
                 end
                 pause(obj.waitTimeSec);
             end
+        end
+        
+        function deleteTask(obj,h)
+        % delete=addTask(obj,h)
+        % 
+        % deletes all tasks corresponding to the handles in h
+            t0=clock();
+            for i=1:length(h)
+                taskFolder=taskFoldername(obj,h(i));
+                [isLocal,computer,filename]=parseName(obj,taskFolder);
+                if isLocal
+                    if obj.verboseLevel>0
+                        fprintf('deleteTask: removing local task folder "%s"\n',filename);
+                    end
+                    rmdir(taskFolder,'s');
+                else
+                    if obj.verboseLevel>0
+                        fprintf('deleteTask: removing remote task folder "%s"\n',filename);
+                    end                    
+                    cmd=sprintf('ssh %s rm -r "%s"',computer,filename);
+                    [rc,result]=system(cmd);
+                    %rc=1;result='test';
+                    success=(rc==0);
+                    if ~success
+                        disp(cmd);
+                        disp(result);
+                        error('deleteTask: error in executing "%s"\n',cmd);
+                    end            
+                end
+
+            end
+        
         end
         
         %%%%%%%%%%%%%%%%%%%%

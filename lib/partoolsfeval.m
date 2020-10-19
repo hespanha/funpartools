@@ -708,7 +708,10 @@ classdef partoolsfeval < handle;
 
         end
         
-        function [success,cmd,rc,result]=callQsubScript(obj)
+        function [success,cmd,rc,result]=callQsubScript(obj,nolaunch)
+            if nargin<2
+                nolaunch=false;
+            end
             qsubName=fullfile(obj.allTasksFolder,'qsubTaskExecution.sh');
             [isLocal,computer,filename]=parseName(obj,qsubName);
             cmd=sprintf('qsub %s',filename);
@@ -719,15 +722,22 @@ classdef partoolsfeval < handle;
                     fprintf('callQsubScript: remote execution at "%s"\n',computer);
                 end
             end
-            [rc,result]=system(cmd);
-            success=(rc==0);
-            if ~success
-                disp(cmd);
-                disp(result);
-                error('callQsubScript: error in executing "%s"\n',cmd);
-            end            
-            fprintf('callQsubScript: success in running "%s"\n',lcmd);
-            fprintf('                qsub returned "%s"\n',regexprep(result,'\n$',''));
+            if ~nolaunch
+                [rc,result]=system(cmd);
+                success=(rc==0);
+                if ~success
+                    disp(cmd);
+                    disp(result);
+                    error('callQsubScript: error in executing "%s"\n',cmd);
+                end     
+                fprintf('callQsubScript: success in running "%s"\n',lcmd);
+                fprintf('                qsub returned "%s"\n',regexprep(result,'\n$',''));
+            else
+                fprintf('callQsubScript: did not run "%s"\n',cmd);
+                success=true;
+                rc=0;
+                result='';
+            end
         end
         
         function allExecuting2waiting(obj)

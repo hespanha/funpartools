@@ -65,7 +65,7 @@ classdef partoolsfeval < handle;
             else
                 % remote filesystem
                 cmd=sprintf('ssh %s cd "%s"',computer,filename);
-                [rc,resul]=system(cmd);
+                [rc,result]=system(cmd);
                 exists=(rc==0);
                 if exists
                     if obj.verboseLevel>1
@@ -80,10 +80,11 @@ classdef partoolsfeval < handle;
                             disp(result)
                             error('partoolsfeval: unable to create remote folder ''%s''\n',folder);                    
                         end
-                    if obj.verboseLevel>1
-                        fprintf('partoolsfeval: successfully created remote tasks folder "%s"\n',folder);
-                    end
+                        if obj.verboseLevel>1
+                            fprintf('partoolsfeval: successfully created remote tasks folder "%s"\n',folder);
+                        end
                     else
+                        cmd,rc,result,
                         error('partoolsfeval: local folder ''%s'' does not exist\n',folder);
                     end
                 end

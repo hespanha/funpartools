@@ -20,9 +20,9 @@ function [filename,pedigreeName,pedigreeNameMat,...
 % Each file in a class is characterized by its 'pedigree' which
 % consists of all the input parameters that were used to generate
 % the file.
-% 
+%
 % The goal of this function is to help organize several files in
-% each class by 
+% each class by
 %    1) Keeping track of the pedigree of each file .
 %
 %       The actualy pedigree information is saved in an ASCII file
@@ -37,7 +37,7 @@ function [filename,pedigreeName,pedigreeNameMat,...
 %
 % Input parameters:
 % ----------------
-% 
+%
 % fileClass - Name of the file class, which may have a path and an
 %             extension.
 %
@@ -46,7 +46,7 @@ function [filename,pedigreeName,pedigreeNameMat,...
 %              the function setParameters() or manually constructed
 %              by the user
 %
-% caller (optional) - function asking to create the pedigree 
+% caller (optional) - function asking to create the pedigree
 %                     [by default this information is taken from dbstack()]
 %
 % temporary (optional) - When true, a temporary pedigree is created
@@ -203,12 +203,12 @@ for i=1:length(names)
     end
     if ismember(names{i},{'executeScript','verboseLevel'})
         continue
-    end 
+    end
     fprintf(fid,'   <LI><EM>%-16s</EM> = ',names{i});
     value=getfield(parameters,names{i});
-    
+
     % display value
-    switch class(value) 
+    switch class(value)
       case 'table'
         value='<table>';
       case 'function_handle'
@@ -274,10 +274,10 @@ for i=1:length(names)
             if j==length(value)
                 fprintf(fid,']<BR>\n');
             end
-            
-        elseif iscell(vj) && all(cellfun(@(x)strcmp(class(x),'outputWithPedigree'),vj)) 
+
+        elseif iscell(vj) && all(cellfun(@(x)strcmp(class(x),'outputWithPedigree'),vj))
             error('createPedigree: Array of pedigrees not yet implemented\n');
-            
+
         elseif ischar(vj) || strcmp(class(vj),'outputWithPedigree')
             if verboseLevel>3
                 fprintf('createPedigree: starting to save char...');
@@ -319,7 +319,7 @@ for i=1:length(names)
                 %     fprintf(fid,'\n         %s',tline);
                 % end
                 % fclose(fp);
-                if j==length(value) 
+                if j==length(value)
                     if length(value)>1
                         fprintf(fid,'</UL>\n');
                     else
@@ -340,7 +340,7 @@ for i=1:length(names)
                 else
                     fprintf(fid,'<BR>%s',vj);
                 end
-                if j==length(value) 
+                if j==length(value)
                     if length(value)>1
                         fprintf(fid,'</UL>\n');
                     else
@@ -388,14 +388,14 @@ fclose(fid);
 wildcard=sprintf(pedigreeWildcard,path,basename,pedigreeSuffix);
 files=dir(wildcard);
 if useTemporaryPedigree
-    thisPedigree=fileread(tempPedigreeName);    
+    thisPedigree=fileread(tempPedigreeName);
 else
     thisPedigree=fileread(pedigreeName);
 end
 reusingPedigree=false;
 for i=1:length(files)
     thisName=[path,'/',files(i).name];
-    if ~useTemporaryPedigree && strcmp(pedigreeName,thisName) 
+    if ~useTemporaryPedigree && strcmp(pedigreeName,thisName)
         % same file?
         continue;
     end
@@ -473,7 +473,7 @@ function modifiedstr=strrep_start(origstr,oldstart,newstart)
 % modifiedstr=strrep_start(origstr,oldstart,newstart)
 % Replace string oldstart by newstart, if the string origstr starts
 % with origstart
-    
+
 if strncmp(origstr,oldstart,length(oldstart))
     modifiedstr=[newstart,origstr(length(oldstart)+1:end)];
 else
@@ -483,4 +483,3 @@ end
 
 
 end
-

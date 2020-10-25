@@ -1,7 +1,7 @@
 function declareOutput(varargin)
 % declareOutput(...
 %     'VariableName','string with the name of the variable',...
-%     'Description',{ 
+%     'Description',{
 %                    'variable description (line 1)'
 %                    'variable description (line 2)'
 %                    ... });

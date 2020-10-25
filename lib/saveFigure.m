@@ -34,7 +34,7 @@ declareParameter(...
     'Description', {
         'Folder where the figure(s) should be created (with respect to the current folder).'
                    });
-    
+
 declareParameter(...
     'VariableName','createFolder',...
     'AdmissibleValues',{false,true},...
@@ -45,7 +45,7 @@ declareParameter(...
         'ATTENTION: include path (even if just ''./'') to help saveFigure making sure it can detect';
         '           if the folder exists where you want it'
                    });
-    
+
 declareParameter(...
     'VariableName','eraseFigures',...
     'AdmissibleValues',{false,true,'force'},...
@@ -55,7 +55,7 @@ declareParameter(...
         'figure(s) should be created before saving them.'
         'When ''force'', the figures are erased without asking.'
                    });
-    
+
 declareParameter(...
     'VariableName','filename',...
     'DefaultValue','',...
@@ -63,7 +63,7 @@ declareParameter(...
         'Filename for the figure (without extension). When empty, the name is derived'
         'from the name of the figure.'
                    });
-    
+
 declareParameter(...
     'VariableName','figureNumber',...
     'DefaultValue',0,...
@@ -71,7 +71,7 @@ declareParameter(...
         'Array with the numbers of the figure to be saved.'
         '0 corresponds to the current figure.'
                    });
-    
+
 declareParameter(...
     'VariableName','fontScaling',...
     'DefaultValue',1,...
@@ -80,7 +80,7 @@ declareParameter(...
         '''fontScaling'' prior to printing.';
         'The fontsizes are restored to their normal values after printing.'
                    });
-    
+
 declareParameter(...
     'VariableName','dpi',...
     'DefaultValue',150,...
@@ -88,7 +88,7 @@ declareParameter(...
         'Dots-per-inch resolution.';
         'A value of 0, defaults to the screen resolution.'
                    });
-    
+
 declareParameter(...
     'VariableName','renderer',...
     'AdmissibleValues',{'auto','painters','opengl'},...
@@ -103,7 +103,7 @@ declareParameter(...
         'As of matlab 2014b, bitmap vs vector format is decided'
         'by the print command.'
                    });
-    
+
 declareParameter(...
     'VariableName','saveFormat',...
     'DefaultValue','eps',...
@@ -121,7 +121,7 @@ declareParameter(...
         '  none - does not save the figure'
         'May be a cell of strings, to save under multiple formats'
                    });
-    
+
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %% Outputs
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -131,14 +131,14 @@ declareOutput(...
     'Description', {
         'Filename (including path) where the figure was save.'
                    });
-    
+
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %% Retrieve parameters and inputs
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 [stopNow,params]=setParameters(nargout,varargin);
 if stopNow
-    return 
+    return
 end
 
 if ischar(saveFormat)
@@ -169,7 +169,7 @@ else
     renderer=['-',renderer];
 end
 
-if isequal(eraseFigures,'force') || isequal(eraseFigures,true) 
+if isequal(eraseFigures,'force') || isequal(eraseFigures,true)
     fprintf('saveFigure: erasing figures in folder ''%s''.\n',folder);
     erasename=fullfile(folder,'*.fig');
     cmd=sprintf(rm,erasename);fprintf('   %s\n',cmd);
@@ -200,16 +200,16 @@ end
 %verboseLevel=4;
 
 for i=1:length(figureNumber)
-    
+
     if figureNumber(i)==0
         figureNumber(i)=gcf;
     else
         figure(figureNumber(i));
     end
-    
+
     % for debug
     %set(figureNumber(i),'InvertHardcopy','off','renderer','painters','GraphicsSmoothing','off');
-    
+
     if isempty(filename)
         thisname=get(figureNumber(i),'name');
         % remove from name "forbidden" characters
@@ -220,13 +220,13 @@ for i=1:length(figureNumber)
     else
         thisname=filename;
     end
-    
+
     thisname=fullfile(folder,thisname);
 
     if fontScaling~=1
         resizeFontSize(figureNumber(i),fontScaling);
     end
-    
+
     if any(ismember({'fig','all'},saveFormat))
         drawnow
         rgb2cm(); % to enable painters mode
@@ -248,7 +248,7 @@ for i=1:length(figureNumber)
     end
 
     %% Raster formats
-    
+
     if any(ismember({'png','all'},saveFormat))
         drawnow
 
@@ -299,7 +299,7 @@ for i=1:length(figureNumber)
     if any(ismember({'pdf','all'},saveFormat))
         drawnow
         rgb2cm(); % to enable painters mode
-    
+
         nameext=[thisname,'.pdf'];
         fprintf('saving %d as .pdf ''%s''...',figureNumber(i),nameext);t0=clock;
         if 1
@@ -320,7 +320,7 @@ for i=1:length(figureNumber)
     if any(ismember({'eps','all'},saveFormat))
         drawnow
         rgb2cm(); % to enable painters mode
-    
+
         nameext=[thisname,'.eps'];
         fprintf('saving %d as .eps ''%s''...',figureNumber(i),nameext);t0=clock;
         if 1
@@ -340,7 +340,7 @@ for i=1:length(figureNumber)
     if any(ismember({'svg','all'},saveFormat))
         drawnow
         rgb2cm(); % to enable painters mode
-    
+
         nameext=[thisname,'.svg'];
         fprintf('saving %d as .svg ''%s''...',figureNumber(i),nameext);t0=clock;
         if 0

@@ -34,7 +34,7 @@ declareParameter(...
     'Description', {
         'This input variable is XXXX.'
                    });
-    
+
 declareParameter(...
     'VariableName','inputVar2',...
     'AdmissibleValues',{},...
@@ -48,20 +48,20 @@ declareOutput(...
     'Description', {
         'This output variable is XXXX.'
                    });
-    
+
 declareOutput(...
     'VariableName','outputVar2',...
     'Description', {
         'This output variable is XXXX.'
                    });
-    
+
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %% Retrieve parameters
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 [stopNow,parameters__]=setParameters(nargout,varargin);
 if stopNow
-    return 
+    return
 end
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -80,5 +80,3 @@ fprintf('done @BASEFILENAMELESSEXTENSION@ (%.3f sec)\n',etime(clock,t0));
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 varargout=setOutputs(nargout,parameters__);
-
-

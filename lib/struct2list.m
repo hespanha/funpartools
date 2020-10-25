@@ -1,6 +1,6 @@
 function list=struct2list(stru)
 % list=struct2list(stru)
-% 
+%
 % Converts the structure |stru| to a cell array of the form
 %   {'fieldname1', value1, 'fieldname2', value2, ... }
     fs=fields(stru);

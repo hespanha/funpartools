@@ -36,7 +36,7 @@ declareParameter(...
     'Description', {
         'Size of the '
                    });
-    
+
 declareParameter(...
     'VariableName','paperSize',...
     'DefaultValue',1,...
@@ -48,14 +48,14 @@ declareParameter(...
         '           the fontsizes are adjusted before printing';
         '           (enlarged for larger paper sizes)'
                    });
-    
+
 declareParameter(...
     'VariableName','figureNumber',...
     'DefaultValue',0,...
     'Description', {
         'Desired number for the figure, 0 corresponds to the current figure.'
                    });
-    
+
 declareParameter(...
     'VariableName','figureName',...
     'DefaultValue','',...
@@ -106,14 +106,14 @@ declareOutput(...
     'Description', {
         'Number of the figure created.'
                    });
-    
+
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %% Retrieve parameters and inputs
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 [stopNow,params]=setParameters(nargout,varargin);
 if stopNow
-    return 
+    return
 end
 
 %verboseLevel=4;
@@ -173,7 +173,7 @@ clf
 props={;
     % paper size/position options
     'paperunits';'inches';
-    'paperorientation';'portrait'; % so that no rotation is needed 
+    'paperorientation';'portrait'; % so that no rotation is needed
     'papersize';paperSize;
     ...%'paperposition';[0,0,paperSize]; % but dimensions are letter landscape
     ...%'PaperPositionMode';'auto';
@@ -203,17 +203,17 @@ for i=1:prod(subplots)
     axes;
     %axis equal - very slow
     %axis off - very slow
-    
+
     zoom reset;
     zoom off;
-    
+
     %% Drawing based on depth (seems to be buggy for text, but needed for patches)
-    %set(gca,'DrawMode','normal'); 
-    %set(gca,'DrawMode','fast'); % MATLAB 2013b 
-    set(gca,'SortMethod','childorder'); % MATLAB 2014 
-    
+    %set(gca,'DrawMode','normal');
+    %set(gca,'DrawMode','fast'); % MATLAB 2013b
+    set(gca,'SortMethod','childorder'); % MATLAB 2014
+
 end
-    
+
 clf
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -222,8 +222,7 @@ clf
 
 varargout=setOutputs(nargout,params);
 
-    
+
 
 
 end
-

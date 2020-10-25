@@ -28,7 +28,7 @@ classdef outputWithPedigree
                            % 'v7.3' slower, but seems needed for large files
                            % 'serial' very fast but seems to cause a crash for large data
     end
-    
+
     methods
         function obj=outputWithPedigree(pedigreeName,fileName,variableName,checkFiles)
             obj.pedigreeName=pedigreeName;
@@ -43,7 +43,7 @@ classdef outputWithPedigree
                   case 'v7.3'
                     fileExists=exist(obj.fileName,'file');
                   case 'serial'
-                    obj.fileName=regexprep(obj.fileName,'\.mat$',''); 
+                    obj.fileName=regexprep(obj.fileName,'\.mat$','');
                     fileExists=exist([obj.fileName,'.serialmatlab'],'file');
                   otherwise
                     error('%s: unkown save format ''%s''\n',caller,obj.saveFormat);
@@ -53,7 +53,7 @@ classdef outputWithPedigree
                 end
             end
         end
-        
+
         function saveValue(obj,value,caller)
             if nargin>=3
                 fprintf('%s: saving %s -> %s... ',caller,obj.variableName,obj.fileName);
@@ -62,7 +62,7 @@ classdef outputWithPedigree
             switch obj.saveFormat
               case 'plainsave' % probably same as v7
                 assign(obj.variableName,value);
-                save(obj.fileName,obj.variableName); 
+                save(obj.fileName,obj.variableName);
               case 'v7'
                 assign(obj.variableName,value);
                 save(obj.fileName,obj.variableName,'-v7');  % much faster than -v7.3
@@ -78,7 +78,7 @@ classdef outputWithPedigree
                 fprintf('done (%.3f sec)\n',etime(clock,t0));
             end
         end
-        
+
         function value=getValue(obj,caller)
             if nargin>=2
                 fprintf('%s: loading %s <- %s... ',caller,obj.variableName,obj.fileName);
@@ -97,7 +97,7 @@ classdef outputWithPedigree
                 fprintf('done (%.3f sec)\n',etime(clock,t0));
             end
         end
-        
+
         function varargout=feval(f,varargin)
 
             f1=getValue(f);
@@ -108,21 +108,21 @@ classdef outputWithPedigree
                 [varargout{:}]=feval(f1);
             end
         end
-            
+
         function varargout=help(f)
 
             f1=getValue(f);
             varargout=cell(nargout,1);
             [varargout{:}]=help(f1);
         end
-            
+
         % function disp(obj)
         %     fprintf('pedigreeName = %s\n',obj.pedigreeName);
         %     fprintf('fileName     = %s\n',obj.fileName);
         %     fprintf('variableName = %s\n',obj.variableName);
         %     fprintf('saveFormat   = %s\n',obj.saveFormat);
         % end
-    
+
     end
-    
+
 end

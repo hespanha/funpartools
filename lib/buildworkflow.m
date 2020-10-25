@@ -1,5 +1,5 @@
 function buildworkflow(varargin)
-% For help on the input parameters type 'buildworkflow help' 
+% For help on the input parameters type 'buildworkflow help'
 %
 % Uses a GUI to creates a script that sets parameters and calls a
 % sequence of functions created with funpartools. The features
@@ -9,7 +9,7 @@ function buildworkflow(varargin)
 % 2) Automatic creation of filenames with pedigrees
 % 3) Link of parameters across multiple files ('inheritance')
 %
-% To do 
+% To do
 % b) allow using paths as inputs to run the script multiple times, one
 %    for each file that matches the path
 % d) automatic population of function parameters based on existing
@@ -34,7 +34,7 @@ function buildworkflow(varargin)
 
 % Function global help
     declareParameter(...
-        'Help', { 
+        'Help', {
             'This function uses a GUI to creates a script that sets'
             'parameters and calls a sequence of functions created with'
             'funpartools. The features provided include:'
@@ -42,7 +42,7 @@ function buildworkflow(varargin)
             '2) Automatic creation of filenames with pedigrees'
             '3) Link of parameters across multiple files (''inheritance'')'
                 })
-    
+
     declareParameter(...
         'VariableName','fig',...
         'DefaultValue',gcf,...
@@ -50,14 +50,14 @@ function buildworkflow(varargin)
             'Handle of figure where the workflow will be created.'
             'Defaults to the current figure (gcf).'
                        });
-    
+
     declareParameter(...
         'VariableName','outputFolder',...
         'DefaultValue','../output-files',...
         'Description', {
             'Folder where all the pedigrees will be created.'
                        });
-    
+
     declareParameter(...
         'VariableName','workflowName',...
         'DefaultValue','execute.m',...
@@ -71,9 +71,9 @@ function buildworkflow(varargin)
         'DefaultValue',{'.'},...
         'Description', {
             'Cell array with path where one should look for the scripts'
-            'on which workflow should be based.' 
+            'on which workflow should be based.'
                        });
-    
+
     declareParameter(...
         'VariableName','predefidedWorkflows',...
         'DefaultValue',{},...
@@ -84,7 +84,7 @@ function buildworkflow(varargin)
             'workflows partially created by the user. The first workflows in the array'
             'have priority over the latter ones.'
                        });
-    
+
     % Assign parameters
     [stopNow,parameters]=setParameters(nargout,varargin);
     if stopNow
@@ -93,9 +93,9 @@ function buildworkflow(varargin)
         end
         return;
     end
-    
+
     workflow={};
-    
+
     %% function parameters
     workflow.scriptsPath=scriptsPaths;
     workflow.predefidedWorkflows=predefidedWorkflows;
@@ -105,7 +105,7 @@ function buildworkflow(varargin)
     end
     workflow.filename=workflowName;
     workflow.verboseLevel=verboseLevel;
-    
+
     %% find functions
     workflow.availableFunctions={};
     for i=1:length(workflow.scriptsPath)
@@ -118,27 +118,27 @@ function buildworkflow(varargin)
             end
         end
     end
-    
+
     %% Draw parameters
     workflow.topMargin=.5;
     workflow.lineHeight=1.8;
     workflow.boxHeight=1.6;
     workflow.guiWidth=150;
     workflow.guiHeight=500;
-    
+
     %% Functions
     workflow.assignTypes={'value','pedigree','inherit','inherit&rep'};
     workflow.functions={};
-    
+
     set(fig,'UserData',workflow);
     set(fig,'ResizeFcn',@(a,b)redraw());
-    
+
     if 1
         load();
     end
-    
+
     redraw();
-    
+
 end
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -153,7 +153,7 @@ function redraw()
     if workflow.verboseLevel>0
         fprintf('redraw()\n');
     end
-    
+
     %% Clear window, create panels, and scroll
     clf
     set(gcf,'units','characters');
@@ -307,7 +307,7 @@ function redraw()
             end
         end
     end
-    
+
     %% Print footer
 
     newline(workflow,panel);
@@ -465,7 +465,7 @@ function helpFunctionCB(hObject,eventdata,i)
     disp(workflow.functions{i}.name)
     disp(workflow.functions{i}.parameters{j}.Description)
     helpdlg(workflow.functions{i}.parameters{j}.Description,workflow.functions{i}.name)
-    
+
     set(gcf,'UserData',workflow);
 end
 
@@ -511,7 +511,7 @@ function assignTypeCB(hObject,eventdata,i,j)
       otherwise
         error('unknown assign.type=''%s''\n',workflow.functions{i}.parameters{j}.assign.type);
     end
-        
+
     set(gcf,'UserData',workflow);
     redraw();
 end
@@ -684,13 +684,13 @@ function workflow=getFunctionDefaults(workflow,i)
 
     existingVariables=cellfun(@(x)getfield(x,'VariableName'),workflow.functions{i}.parameters,'UniformOutput',0);
     allVariables=cellfun(@(x)getfield(x,'VariableName'),parameters,'UniformOutput',0);
-    
+
     %% Check if all previously set variables are valid
     if ~isempty(setdiff(existingVariables,allVariables))
         disp(setdiff(existingVariables,allVariables))
         error('unknown variables for function %s\n',workflow.functions{i}.name);
     end
-    
+
     %% Set assignments based on: previous values OR defaults
     for j=1:length(parameters)
         k=find(strcmp(parameters{j}.VariableName,existingVariables));
@@ -736,7 +736,7 @@ function workflow=getFunctionDefaults(workflow,i)
         end
         parameters{j}.assign.type='value';
         parameters{j}.assign.value=NaN;
-    end   
+    end
     workflow.functions{i}.parameters=parameters;
 end
 
@@ -794,11 +794,11 @@ function pedigreesCB(hObject,eventdata)
     set(gcf,'UserData',workflow);
     redraw();
 end
-    
+
 function hasdata=pedigreeHasData(workflow,name)
     %% get key formating parameters for filenames
     [filename,pedigreeName,pedigreeSuffix,dateFormat,basenameUniqueRegexp,timeStampFormat,pedigreeWildcard]=createPedigree();
-    
+
     if workflow.verboseLevel>0
         fprintf('Analysing pedigree: %s\n',name);
     end
@@ -807,12 +807,12 @@ function hasdata=pedigreeHasData(workflow,name)
 
     [~,filename,ext]=fileparts(thisName);
     filename=[filename,ext];
-    
+
     matchFiles=dir(thisWildcard);
-    
+
     hasdata=false;
     for i=1:length(matchFiles)
-        if strcmp(matchFiles(i).name,filename) 
+        if strcmp(matchFiles(i).name,filename)
             %            fprintf('   same (ignored)\n');
             continue;
         end
@@ -822,7 +822,7 @@ function hasdata=pedigreeHasData(workflow,name)
         hasdata=true;
         break;
     end
-    
+
 end
 
 function saveCB(hObject,eventdata,execute)
@@ -842,13 +842,13 @@ function saveCB(hObject,eventdata,execute)
     else
         scriptname='toerase';
         fid=fopen('toerase.m','w');
-    end        
+    end
 
     fprintf(fid,'function parameters=%s()\n',scriptname);
     fprintf(fid,'%%%% ATTENTION: This file has been generated by buildworkflow().\n');
     fprintf(fid,'%%%%            . Changes may prevent buildworkflow() from reading this file.\n');
     fprintf(fid,'%%%%            . Changes may be subsequently overwritten by buildworkflow().\n');
-    
+
     for i=1:length(workflow.functions)
         fprintf(fid,'\n%%%% Parameters for %s (%d)\n',workflow.functions{i}.name,i);
         % leave pedigrees for end
@@ -905,7 +905,7 @@ function saveCB(hObject,eventdata,execute)
         fprintf(fid,'end\n');
     end
     fclose(fid);
-    rehash 
+    rehash
 
     %% create batch
     if execute
@@ -920,7 +920,7 @@ function saveCB(hObject,eventdata,execute)
             system(sprintf('chmod u+x %s',batchname));
         end
     end
-    
+
     if workflow.verboseLevel>0
         fprintf('  done saving\n');
     end
@@ -937,26 +937,26 @@ function load()
     workflow.filename=fullfile(filepath,filename);
 
     fid=fopen(workflow.filename,'r');
-    
+
     if fid<0
         return;
     end
-    
+
     ifexecute=[];
-    
+
     while 1
         tline=fgetl(fid);
         if ~ischar(tline), break, end
 
-        % empty 
+        % empty
         if isempty(tline)
             if workflow.verboseLevel>0
                 fprintf('empty line\n');
             end
             continue
         end
-        
-        % comment 
+
+        % comment
         s=regexp(tline,'^\s*(?<comment>%.*)?$','names');
         if ~isempty(s)
             if workflow.verboseLevel>0
@@ -964,7 +964,7 @@ function load()
             end
             continue
         end
-        
+
         % function
         s=regexp(tline,'^\s*function\s*(?<function>.*)\s*(?<comment>%.*)?$','names');
         if ~isempty(s)
@@ -973,7 +973,7 @@ function load()
             end
             continue
         end
-        
+
         % fprint
         s=regexp(tline,'^\s*fprintf\((?<string>.*)\);\s*(?<comment>%.*)?$','names');
         if ~isempty(s)
@@ -982,7 +982,7 @@ function load()
             end
             continue
         end
-        
+
         % fprint
         s=regexp(tline,'^\s*clear\s+parameters;?\s*(?<comment>%.*)?$','names');
         if ~isempty(s)
@@ -991,7 +991,7 @@ function load()
             end
             continue
         end
-        
+
         % parameters{???}.??? = createPedigree(???,parameters{???}); % ....
         s=regexp(tline,'^\s*parameters{(?<findex>\w+)}\.(?<vname>\w+)\s*=\s*createPedigree\((?<value>.*),parameters{(?<findex1>\w+)}\);\s*(?<comment>%.*)?$','names');
         if ~isempty(s) && strcmp(s.findex,s.findex1)
@@ -1053,7 +1053,7 @@ function load()
             ifexecute(end+1)=str2num(s.expression);
             continue
         end
-        
+
         % if ???
         s=regexp(tline,'^\s*if\s+(?<expression>.+)\s*(?<comment>%.*)?$','names');
         if ~isempty(s)
@@ -1063,7 +1063,7 @@ function load()
             ifexecute(end+1)=1;
             continue
         end
-        
+
         % end
         s=regexp(tline,'^\s*end\s*(?<comment>%.*)?$','names');
         if ~isempty(s)
@@ -1073,10 +1073,10 @@ function load()
             ifexecute(end)=[];
             continue;
         end
-        
+
         % ???('parametersStructure',parameters{???});'
         s=regexp(tline,'^\s*(?<fname>\w+)\(''parametersStructure'',parameters{(?<findex>\w+)}\);\s*(?<comment>%.*)?$','names');
-        if ~isempty(s) 
+        if ~isempty(s)
             if workflow.verboseLevel>0
                 fprintf('%s(''parametersStructure'',parameters{%s}); ''%s''\n',s.fname,s.findex,s.comment);
             end
@@ -1089,11 +1089,11 @@ function load()
             workflow=getFunctionDefaults(workflow,i);
             continue
         end
-                
+
         fprintf('load: UNKNOWN LINE ''%s''\n',tline);
-        
+
     end
-    
+
     fclose(fid);
     if workflow.verboseLevel>0
         fprintf('  done loading\n');
@@ -1116,7 +1116,7 @@ function [workflow,i,j]=findVariable(workflow,findex,vname)
 end
 
 function str=value2str(value)
-    
+
     if isnumeric(value)
         str=mat2str(value);
     elseif ischar(value)
@@ -1134,6 +1134,6 @@ function str=value2str(value)
                     str=[str,',',value2str(value{i,j})];
                 end
             end
-        end 
+        end
     end
 end

@@ -14,28 +14,28 @@ function declareParameter(varargin)
 %                    the name of the pedigree
 %
 %     'AdmissibleValues',{ list of admissible value for the variable },...
-%     'Description',{ 
+%     'Description',{
 %                    'variable description (line 1)'
 %                    'variable description (line 2)'
 %                    ... },...
-%     'PossibleInheritances',{ 
-%          % list of scripts and input parameters for those scripts from 
-%          % which the value for this variable could be inherited 
+%     'PossibleInheritances',{
+%          % list of scripts and input parameters for those scripts from
+%          % which the value for this variable could be inherited
 %          % (possibly after regexprep substitution)
 %          'script name 1','parameters','regular expression','replacement rule';
 %          'script name 2','parameters','regular expression','replacement rule';
 %          ...
 %          });
 %
-% Declares an input parameter for a function. 
+% Declares an input parameter for a function.
 %
 % declareParameter(...
 %     'Help','string with a help header describing the function');
 %
 % Defines a help header that describes the overal function. The
 % actual help for the function also includes the 'Description' of
-% the several input and output parameters. 
-% 
+% the several input and output parameters.
+%
 % The help header and input/output parameter descriptions may
 % include Matlab's publishing Markup:
 %  . *BOLD TEXT*

@@ -18,14 +18,14 @@ function [stopNow,parameters]=setParameters(nargout,list_)
 % This function is typically used within a m-script function as follows:
 %
 %   function [varargout]=functionName(varargin)
-%   % For help on the input parameters type 'scriptName Help' 
+%   % For help on the input parameters type 'scriptName Help'
 %
 %     % Function global help
 %     declareParameter(...
 %         'Help', { '...' })
 %
 %     % Declare all input parameters, see 'help declareParameter'
-%     declareParameter( .... ); 
+%     declareParameter( .... );
 %
 %     % Declare all output parameters, see 'help declareOutput'
 %     declareOutput( .... );
@@ -39,9 +39,9 @@ function [stopNow,parameters]=setParameters(nargout,list_)
 %     % Start main code here
 %
 %     ....
-% 
+%
 %     % Set outputs
-% 
+%
 %     varargout=setOutputs(nargout,params);
 %
 %  end
@@ -85,10 +85,10 @@ end
 if isempty(list_) || ...
         ( strcmp(lower(list_{1}),'help') && ...
           (length(list_)==1 || length(list_)==2 && strcmp(lower(list_{2}),'latex') ) )
-    
+
     %~isempty(list_) && strcmp(lower(list_{1}),'help') && (length(list_)==1 || length(list_)==2 && strcmp(lower(list_{2}),'latex'))
     latex=length(list_)==2;
-    
+
     if nargout==0
         %% Print help and exit with stopNow=1
         % print template
@@ -114,7 +114,7 @@ if isempty(list_) || ...
                     fprintf('%s',markup2matlab(callerVariables{i_}.Description,0));
                 end
             end
-        end    
+        end
         if Help_
             if latex
                 fprintf(fx,'\n');
@@ -143,7 +143,7 @@ if isempty(list_) || ...
                 else
                     fprintf('%%\n%% %s',callerVariables{i_}.VariableName);
                 end
-                if isfield(callerVariables{i_},'DefaultValue') 
+                if isfield(callerVariables{i_},'DefaultValue')
                     if latex
                         fprintf(' [default \\texttt{%s}]',...
                                 markup2latex(value2str(callerVariables{i_}.DefaultValue),0));
@@ -153,7 +153,7 @@ if isempty(list_) || ...
                         fprintf(' [default %s]',value2str(callerVariables{i_}.DefaultValue));
                     end
                 end
-                if isfield(callerVariables{i_},'AdmissibleValues') 
+                if isfield(callerVariables{i_},'AdmissibleValues')
                     if latex
                         fprintf(' taking values in [');
                         fprintf(fx,' taking values in [');
@@ -188,14 +188,14 @@ if isempty(list_) || ...
                 else
                     fprintf('\n');
                 end
-                
+
                 if latex
                     fprintf('%s\n',markup2latex(callerVariables{i_}.Description,1));
                     fprintf(fx,'%s\n',markup2latex(callerVariables{i_}.Description,1));
                 else
                     fprintf('%s',markup2matlab(callerVariables{i_}.Description,1));
                 end
-                if isfield(callerVariables{i_},'PossibleInheritances') 
+                if isfield(callerVariables{i_},'PossibleInheritances')
                     if latex
                         fprintf('\n\n    Typically obtained from:');
                         fprintf(fx,'\n\n    Typically obtained from:');
@@ -322,7 +322,7 @@ for j_=1:2:length(list_)
             assigned=1;
             break
         end
-    end    
+    end
     if ~assigned
         error('setParameters(%s): Undeclared parameter ''%s''\n',callerName_,list_{j_});
     end
@@ -348,9 +348,9 @@ else
                         value2str(callerVariables{i_}.DefaultValue));
             end
             assignin('caller',callerVariables{i_}.VariableName,...
-                              callerVariables{i_}.DefaultValue); 
+                              callerVariables{i_}.DefaultValue);
             parameters=setfield(parameters,callerVariables{i_}.VariableName,...
-                                callerVariables{i_}.DefaultValue); 
+                                callerVariables{i_}.DefaultValue);
             parametersStructure=callerVariables{i_}.DefaultValue;
             break;
         end
@@ -406,7 +406,7 @@ for i_=length(callerVariables):-1:1
                               callerVariables{i_}.DefaultValue);
         end
     end
-end 
+end
 
 %% look for DefaultValues from pedigree
 if evalin('caller','exist(''pedigreeClass'',''var'')')
@@ -460,11 +460,11 @@ for i_=1:length(callerVariables)
         end
     else
         if ~strcmp(callerVariables{i_}.VariableName,'Help_') && ...
-                ~strcmp(callerVariables{i_}.type,'output') 
+                ~strcmp(callerVariables{i_}.type,'output')
             error('setParameters(%s): Parameter ''%s'' has not been assigned\n',...
                   callerName_,callerVariables{i_}.VariableName);
         end
-    end 
+    end
 end
 
 %% Check if script should be executed
@@ -528,7 +528,7 @@ if ~stopNow
                 assignin('caller',callerVariables{i_}.VariableName,getValue(obj,callerName_));
             end
         end
-    end    
+    end
 end
 
 end
@@ -550,7 +550,7 @@ function newstr=markup2latex(oldstr,indent)
     if ~iscell(oldstr)
         oldstr={oldstr};
     end
-    
+
     newstr='';
     depth=1;
     oldindent{depth}=-1;
@@ -562,14 +562,14 @@ function newstr=markup2latex(oldstr,indent)
         str=regexprep(str,'}','\\}');
         str=regexprep(str,'#','\\#');
         str=regexprep(str,'\^','\textasciicircum{}');
-        
+
         %% MATLAB Markup
 
         % bold
         str=regexprep(str,'\*([^*]+)\*','\\textbf{$1}');
         % monospace
         str=regexprep(str,'\|([^|]+)\|','\\texttt{$1}');
-        
+
         % lists
         S=regexp(str,'^(\s*)\*([^*]+)$','tokens');
         if ~isempty(S)
@@ -603,7 +603,7 @@ function newstr=markup2latex(oldstr,indent)
         end
 
         str=regexprep(str,'%','\\%');
-        
+
         if i>1
             newstr=[newstr,repmat(' ',1,3*indent),sprintf('\n%s',str)];
         else
@@ -622,7 +622,7 @@ function newstr=markup2matlab(oldstr,indent)
     if ~iscell(oldstr)
         oldstr={oldstr};
     end
-    
+
     newstr='';
     bullet=false;
     for i=1:length(oldstr)

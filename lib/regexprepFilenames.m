@@ -20,7 +20,7 @@
 
 
 % which files
-folder='./'   
+folder='./'
 wildcard = '*.*'
 
 % regexprep substitution ($N for tokens in rep)
@@ -44,4 +44,3 @@ for i=1:length(files)
     end
 end
 fprintf('regexprepFiles:\t%d files changed\n',nChanges);
-

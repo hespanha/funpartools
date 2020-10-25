@@ -1,6 +1,6 @@
 function archivePedigreeChildren(pedigree,archiveFolder,selectData,selectParameters)
 % archivePedigreesChildren(pedigree,archiveFolder,selectData,selectParameters)
-% 
+%
 % Copies to the given folder 'archiveFolder' all the data files
 % corresponding to a given pedigree and also all their children (all
 % in the same folder as the pedigree) .
@@ -15,8 +15,8 @@ function archivePedigreeChildren(pedigree,archiveFolder,selectData,selectParamet
 %
 % selectData (optional) - Regular expression that permits the selection
 %                         of data files to archive based on their name.
-%                         E.g., 
-%                           selectData='\.(tab|cod|bmu|html)$' 
+%                         E.g.,
+%                           selectData='\.(tab|cod|bmu|html)$'
 %                         will only allow data files with the 4 given
 %                         extensions to be archived.
 %
@@ -27,8 +27,8 @@ function archivePedigreeChildren(pedigree,archiveFolder,selectData,selectParamet
 % selectParameters (optional) - Regular expression that permits the pruning
 %                         of parameters to include in the pedigree files
 %                         that will be copies, based on the parameters
-%                         names. E.g., 
-%                           selectParameters='^(nTopics|clusterMethod)$' 
+%                         names. E.g.,
+%                           selectParameters='^(nTopics|clusterMethod)$'
 %                         will only allow the 2 given parameters to
 %                         appear in the pedigree files.
 %
@@ -150,7 +150,7 @@ for i=1:length(files2move)
                     include=0;
                 end
                 parname=regexp(txt,'^ *(<LI>)?<EM>([^< ]*) *</EM> = ','tokens');
-                if ~isempty(parname) 
+                if ~isempty(parname)
                     % parameter name
                     if ~isempty(regexp(parname{1}{2},selectParameters))
                         %fprintf('\tincluding parameter %s\n',parname{1}{2});
@@ -191,20 +191,20 @@ fprintf('   done!\n');
 function files2move=addDataFiles(pedigreeSuffix,files2move,pedigree_path,pedigree_filename)
 
 verboseLevel=0;
-    
+
 %% add pedigree itself
 files2move(end+1)={pedigree_filename};
 
 if verboseLevel>0
         fprintf('Looking for data of ''%s''\n',pedigree_filename);
 end
-    
+
 %% add data files
 thisWildcard=regexprep(pedigree_filename,[pedigreeSuffix,'$'],'*');
 matchFiles=dir([pedigree_path,thisWildcard]);
 for i=1:length(matchFiles)
     thisName=[pedigree_path,matchFiles(i).name];
-    if strcmp(matchFiles(i).name,pedigree_filename) 
+    if strcmp(matchFiles(i).name,pedigree_filename)
         %            fprintf('   same (ignored)\n');
         continue;
     end

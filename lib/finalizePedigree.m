@@ -1,6 +1,6 @@
 function finalizePedigree(pedigreeName,pedigreeNameMat)
 % finalizePedigree(pedigreeName,pedigreeNameMat)
-% 
+%
 % Makes permanent a pedigree created using
 %
 % temporary=true;
@@ -12,12 +12,12 @@ function finalizePedigree(pedigreeName,pedigreeNameMat)
         disp(message)
         error('finalizePedigree: unable to movefile(''%s'',''%s'')\n',old,pedigreeNameMat);
     end
-    
+
     old=[pedigreeName,'~'];
     [success,message]=movefile(old,pedigreeName);
     if ~success
         disp(message)
         error('finalizePedigree: unable to movefile(''%s'',''%s'')\n',old,pedigreeName);
     end
-    
+
 end

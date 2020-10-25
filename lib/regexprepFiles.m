@@ -22,7 +22,7 @@
 
 %% which files
 % '/'-terminated folder
-folder='./'   
+folder='./'
 
 % wildcard
 wildcard = '*.html'
@@ -46,10 +46,10 @@ nChanges=0;
 for i=1:length(files)
     filename=sprintf('%s%s',folder,files(i).name);
     bakname =sprintf('%s%s.bak',folder,files(i).name);
-    
+
     olddata=fileread(filename);
     newdata=regexprep(olddata,regexp,rep);
-    
+
     if ~strcmp(olddata,newdata)
         nChanges=nChanges+1;
         fprintf(['regexprepFiles:\tchanging file   ''%s''\n\t\trenaming old to ''%s''\n'],filename,bakname);

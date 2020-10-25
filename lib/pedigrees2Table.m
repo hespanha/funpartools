@@ -1,6 +1,6 @@
 function pedigrees2Table(path,exclude)
-% pedigrees2Table(path,exclude) 
-% 
+% pedigrees2Table(path,exclude)
+%
 % Combines all the pedigrees in a given path into a single table
 % that highlights the differences between them.
 %
@@ -29,44 +29,44 @@ function pedigrees2Table(path,exclude)
     if nargin<2
         exclude=[];
     end
-    
+
     fprintf('pedigrees2Table...\n');
     t0=clock();
-    
+
     %% get key formating parameters for filenames
     [filename,pedigreeName,pedigreeNameMat,pedigreeSuffix,pedigreeSuffixMat,...
      dateFormat,basenameUniqueRegexp,timeStampFormat,pedigreeWildcard]=createPedigree();
-    
+
     %% get list of pedigree files
     wildcard=sprintf(pedigreeWildcard,path,'/*',pedigreeSuffixMat);
     pedigreeFiles=dir(wildcard);
-    
+
     pedigrees=struct(...
         'name',{},...
         'basename',{},...
         'parameters',{},...
         'childrenName',{});
-    
+
     %% Read pedigree files
     columnNames={};
     variableNames={};
     for thisPedigree=1:length(pedigreeFiles)
-        
+
         if ~isempty(regexp(pedigreeFiles(thisPedigree).name,exclude))
             fprintf('Excluding pedigree: %s\n',pedigreeFiles(thisPedigree).name);
             continue;
         end
-            
+
         thisName=[path,'/',pedigreeFiles(thisPedigree).name];
         load(thisName);
         fprintf('Analysing pedigree %d: %-20s: %s\n',thisPedigree,basename,pedigreeFiles(thisPedigree).name);
-        
+
         pedigrees(end+1,1).name=pedigreeName;
         pedigrees(end).basename=basename;
         pedigrees(end).parameters=parameters;
         pedigrees(end).children={};
-        
-        
+
+
         names=fieldnames(parameters);
         for i=1:length(names)
             value=parameters.(names{i});
@@ -123,11 +123,11 @@ function pedigrees2Table(path,exclude)
             end
         end
     end
-    
+
     %% Find out full dependencies
     allDependents=dependents;
     old=allDependents;
-    while 1 
+    while 1
         allDependents=allDependents+allDependents*allDependents;
         allDependents(allDependents>0)=1;
         if isequal(old,allDependents)
@@ -135,18 +135,18 @@ function pedigrees2Table(path,exclude)
         end
         old=allDependents;
     end
-    
+
     % allDependents
     % diag(allDependents)
     % any(allDependents,1)
     % any(allDependents,2)
-    
+
     % check regexp
     noChildren=find(any(allDependents,1)==0);
 
     % save all parameters to table (initially a structure)
     tbl=cell2struct(cell(0,length(variableNames)+1),[{'pedigreeName'};variableNames],2);
-    
+
     for row=1:length(noChildren)
         pedigree=pedigrees(noChildren(row)).name;
         children=union(noChildren(row),find(allDependents(noChildren(row),:)));
@@ -195,9 +195,9 @@ function pedigrees2Table(path,exclude)
 end
 
 function [columnName,variableName]=getFullNames(basename,parametername)
-    
+
     columnName=sprintf('%s_%s',basename,parametername);
-    
+
     if nargout<2
         return
     end
@@ -209,7 +209,7 @@ function [columnName,variableName]=getFullNames(basename,parametername)
     else
         variableName=matlab.lang.makeValidName(columnName);
     end
-    
+
 end
 
 function value=tableFriendly(value)

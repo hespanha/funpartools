@@ -1,9 +1,9 @@
 function deleteDatalessPedigrees(path)
 % deleteOrphanPedigrees(path)
-% 
+%
 % Removes pedigree files without "child" data files in the class
 %
-% Attention: Should NOT be called between calling 
+% Attention: Should NOT be called between calling
 %    filename=createPedigree(...)
 % and using the returned filename to create the data file.
 %
@@ -43,7 +43,7 @@ for thisPedigree=1:length(pedigrees)
 
     thisWildcard=regexprep(thisName,[pedigreeSuffix,'$'],'*');
     matchFiles=dir(thisWildcard);
-    
+
     match=false;
     for i=1:length(matchFiles)
         if ~isempty(regexp(matchFiles(i).name,[pedigreeSuffix,'$'])) || ...
@@ -56,7 +56,7 @@ for thisPedigree=1:length(pedigrees)
         end
         match=true;
     end
-    
+
     if ~match
         filename=thisName;
         fprintf('***      NO DATA, will delete %s\n',filename);
@@ -74,7 +74,7 @@ for thisPedigree=1:length(pedigrees)
 
     thisWildcard=regexprep(thisName,[pedigreeSuffixMat,'$'],'*');
     matchFiles=dir(thisWildcard);
-    
+
     match=false;
     for i=1:length(matchFiles)
         if ~isempty(regexp(matchFiles(i).name,[pedigreeSuffix,'$'])) || ...
@@ -87,13 +87,10 @@ for thisPedigree=1:length(pedigrees)
         end
         match=true;
     end
-    
+
     if ~match
         filename=thisName;
         fprintf('***      NO DATA, will delete %s\n',filename);
         delete(filename)
     end
 end
-
-    
-    

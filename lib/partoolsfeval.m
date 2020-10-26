@@ -592,6 +592,7 @@ classdef partoolsfeval < handle;
                     % avoid race conditions, e.g., in selecting pedigree names
                     pause(1.5+2*rand(1));
                 end
+                delete(pool);
                 if exist(joblocation,'dir')
                     rmdir(joblocation);
                 end

@@ -315,14 +315,14 @@ classdef partoolsfeval < handle;
             [success,cmd,rc]=atomicCreateFolder(obj,taskFolder);
             if ~success
                 if obj.verboseLevel>1
-                    fprintf('addTaskGivenHandle: unable to create task h=%d in "%s"\n',h,taskFolder);
+                    fprintf('addTaskGivenHandle: unable to create new task h=%d in "%s"\n',h,taskFolder);
                 end
                 return
             end
 
             % success!
-            if obj.verboseLevel>1
-                fprintf('addTaskGivenHandle: created task h=%d in "%s"\n',h,taskFolder);
+            if obj.verboseLevel>2
+                fprintf('addTaskGivenHandle: created new task h=%d in "%s"\n',h,taskFolder);
             end
             cn=creationFilename(obj,h);
             % create with a temporary same
@@ -361,7 +361,7 @@ classdef partoolsfeval < handle;
                 error('addTaskGivenHandle: command "%s" failed with rc=%d, this should not happen!\n',cmd,rc);
             end
             if obj.verboseLevel>0
-                if length(taskFolder)<=30
+                if length(taskFolder)<=50
                     fprintf('addTaskGivenHandle: successfully created task h=%d in "%s"\n',h,taskFolder);
                 else
                     fprintf('addTaskGivenHandle: successfully created task h=%d in\n\t"%s"\n',h,taskFolder);

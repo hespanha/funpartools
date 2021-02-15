@@ -414,7 +414,7 @@ classdef partoolsfeval < handle;
            error('addTask failed too many times (%d)\n',c);
         end
 
-        function waitForTasks(obj,timeout)
+        function done=waitForTasks(obj,timeout)
         % waitForTasks(obj)
         %
         % Waits until all the tasks have been completed
@@ -438,6 +438,7 @@ classdef partoolsfeval < handle;
                 ef=thisDir(executingWC);
                 if isempty(wf) && isempty(ef)
                     fprintf('waitForTasks: done (%.2f sec)\n',etime(clock,t0));
+                    done=true;
                     return
                 end
                 if obj.verboseLevel>0
@@ -446,6 +447,7 @@ classdef partoolsfeval < handle;
                 end
                 pause(obj.waitTimeSec);
             end
+            done=false;
         end
 
         function deleteTask(obj,h)

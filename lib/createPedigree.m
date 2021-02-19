@@ -432,19 +432,8 @@ for i=1:length(files)
     end
 end
 
-if useTemporaryPedigree && ~reusingPedigree
-    if temporary
-        fn=[pedigreeName,'~'];
-    else
-        fn=pedigreeName;
-    end
-    success=movefile(tempPedigreeName,fn);
-    if ~success
-        error('createPedigree: unable to create file ''%s''\n',fn);
-    end
-end
-
-%% Remove tables from parameters
+pedigreeNameMat=[path,basenameUnique,pedigreeSuffixMat];
+%% Remove tables from parameters for saving in .mat file
 for i=1:length(names)
     switch class(parameters.(names{i}))
       case 'function_handle'
@@ -455,14 +444,26 @@ for i=1:length(names)
     end
 end
 
-pedigreeNameMat=[path,basenameUnique,pedigreeSuffixMat];
-if temporary
-    fn=[pedigreeNameMat,'~'];
-else
-    fn=pedigreeNameMat;
+if useTemporaryPedigree && ~reusingPedigree
+    if temporary
+        fn=[pedigreeName,'~'];
+        fnm=[pedigreeNameMat,'~'];
+    else
+        fn=pedigreeName;
+        fnm=pedigreeNameMat;
+    end
+    success=movefile(tempPedigreeName,fn);
+    if ~success
+        error('createPedigree: unable to create file ''%s''\n',fn);
+    end
+    if exits(fnm,'file')
+        fprintf('createPedigree: erasing existing temporary .mat pedigree');
+        delete(fnm);
+    end
+    save(fnm,'-v7.3',...
+         'parameters','basename','basenameUnique','pedigreeName','pedigreeNameMat');
 end
-save(fn,'-v7.3',...
-     'parameters','basename','basenameUnique','pedigreeName','pedigreeNameMat');
+
 
 return
 

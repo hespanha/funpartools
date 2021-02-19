@@ -456,11 +456,11 @@ if useTemporaryPedigree && ~reusingPedigree
     if ~success
         error('createPedigree: unable to create file ''%s''\n',fn);
     end
-    if exits(fnm,'file')
+    if exist(fnm,'file')
         fprintf('createPedigree: erasing existing temporary .mat pedigree');
         delete(fnm);
     end
-    save(fnm,'-v7.3',...
+    save(fnm,...%'-v7.3',...
          'parameters','basename','basenameUnique','pedigreeName','pedigreeNameMat');
 end
 

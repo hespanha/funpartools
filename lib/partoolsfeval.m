@@ -663,7 +663,7 @@ classdef partoolsfeval < handle;
             fprintf(fh,'#PBS -N pbsjob_qsubTaskExecution\n');
             fprintf(fh,'### Output and error paths\n');
             if isLocal
-                pth=regexprep(filename,'^~/',getenv('HOME'));
+                pth=regexprep(filename,'^~/',[getenv('HOME'),'/']);
                 % qsub interpretes "relative" paths from working
                 % directory, so we add executePath
                 if pth(1)~='/'

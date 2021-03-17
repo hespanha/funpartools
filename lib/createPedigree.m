@@ -97,6 +97,7 @@ function [filename,pedigreeName,pedigreeNameMat,...
 
 verboseLevel=0;  % 0 none, 1 less, 2 more
 
+% creates a pedigree as a (unique) temporary file to check if one already exists
 useTemporaryPedigree=true;
 
 if nargin<3 & nargin>1
@@ -117,6 +118,7 @@ end
 %% Parameters
 pedigreeSuffix='-pedigree.html';
 pedigreeSuffixMat='-pedigree.mat';
+pedigreeName2Mat=@(name)regexprep(name,'.html(~)?$','.mat$1');
 dateFormat='yyyymmdd-HHMMSS';
 basenameUniqueRegexp='^(.*\+TS=\d\d\d\d\d\d\d\d-\d\d\d\d\d\d-\d\d\d\d\d\d)';
 timeStampFormat='%s+TS=%s-%06.0f'; % for sprintf(.,basename,datestr,subsecond);
@@ -385,54 +387,64 @@ end
 fclose(fid);
 
 %% Look for existing pedigree
-wildcard=sprintf(pedigreeWildcard,path,basename,pedigreeSuffix);
-files=dir(wildcard);
-if useTemporaryPedigree
-    thisPedigree=fileread(tempPedigreeName);
-else
-    thisPedigree=fileread(pedigreeName);
-end
-reusingPedigree=false;
-for i=1:length(files)
-    thisName=[path,'/',files(i).name];
-    if ~useTemporaryPedigree && strcmp(pedigreeName,thisName)
-        % same file?
-        continue;
-    end
+if isfield(parameters,'executeScript') && strcmp(parameters.executeScript,'yes')
+    % executeScript='yes' always creates new pedigree to avoid messing
+    % up output of previous calls
+    reusingPedigree=false;
     if verboseLevel>1
-        fprintf('createPedigree: testing\n\t  ''%s''\n\t==''%s''\n',pedigreeName,thisName)
+        fprintf('\t executeScript=''yes''\n');
     end
-    try
-        pedigree=fileread(thisName);
-    catch
-        fprintf('createPedigree: cannot read file ''%s''\n',thisName);
-        continue
-    end
-    if strcmp(thisPedigree,pedigree)
-        % same content
-        if verboseLevel>0
-            fprintf('createPedigree: pedigree already exists, reusing it\n');
-        end
-        if useTemporaryPedigree
-            delete(tempPedigreeName);
-        else
-            delete(pedigreeName);
-        end
-        pedigreeName=thisName;
-        basenameUnique=['/',files(i).name(1:end-length(pedigreeSuffix))];
-        filename=[path,basenameUnique,extension];
-        reusingPedigree=true;
-        break
+else
+    reusingPedigree=false;
+    wildcard=sprintf(pedigreeWildcard,path,basename,pedigreeSuffix);
+    files=dir(wildcard);
+    if useTemporaryPedigree
+        thisPedigree=fileread(tempPedigreeName);
     else
+        thisPedigree=fileread(pedigreeName);
+    end
+    for i=1:length(files)
+        thisName=[path,'/',files(i).name];
+        if ~useTemporaryPedigree && strcmp(pedigreeName,thisName)
+            % same file?
+            continue;
+        end
         if verboseLevel>1
-            fprintf('\t different pedigrees\n');
-            %disp(thisPedigree)
-            %disp(pedigree)
+            fprintf('createPedigree: testing\n\t  ''%s''\n\t==''%s''\n',pedigreeName,thisName)
+        end
+        try
+            pedigree=fileread(thisName);
+        catch
+            fprintf('createPedigree: cannot read file ''%s''\n',thisName);
+            continue
+        end
+        if strcmp(thisPedigree,pedigree)
+            % same content
+            if verboseLevel>0
+                fprintf('createPedigree: pedigree already exists, reusing it\n');
+            end
+            if useTemporaryPedigree
+                delete(tempPedigreeName);
+            else
+                delete(pedigreeName);
+            end
+            pedigreeName=thisName;
+            basenameUnique=['/',files(i).name(1:end-length(pedigreeSuffix))];
+            filename=[path,basenameUnique,extension];
+            reusingPedigree=true;
+            temporary=false;
+            break
+        else
+            if verboseLevel>1
+                fprintf('\t different pedigrees\n');
+                %disp(thisPedigree)
+                %disp(pedigree)
+            end
         end
     end
 end
 
-pedigreeNameMat=[path,basenameUnique,pedigreeSuffixMat];
+pedigreeNameMat=pedigreeName2Mat(pedigreeName);
 %% Remove tables from parameters for saving in .mat file
 for i=1:length(names)
     switch class(parameters.(names{i}))

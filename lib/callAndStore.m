@@ -30,27 +30,27 @@ function varargout=callAndStore(fun,varargin)
 % along with TensCalc.  If not, see <http://www.gnu.org/licenses/>.
 
 
-verboseLevel=1;
-
-global callAndStoreSave_
-
-if nargin==0 || isequal(callAndStoreSave_,[])
-    callAndStoreSave_=struct('fun',{},'varargin',{},'varargout',{},'nCalls',{});
-    fprintf('callAndStore: initializing structure to save data\n');
-    if nargin==0
-        return
+    verboseLevel=0;
+    
+    global callAndStoreSave_
+    
+    if nargin==0 || isequal(callAndStoreSave_,[])
+        callAndStoreSave_=struct('fun',{},'varargin',{},'varargout',{},'nCalls',{});
+        fprintf('callAndStore: initializing structure to save data\n');
+        if nargin==0
+            return
+        end
     end
-end
-
-funName=char(fun);
-if length(funName)>20
-    funName=[funName(1:min(end,17)),'...'];
-end
-
-for i=1:length(callAndStoreSave_)
-    if isequal(char(fun),char(callAndStoreSave_(i).fun)) && ...
-            isequal(varargin,callAndStoreSave_(i).varargin) && ...
-            nargout==length(callAndStoreSave_(i).varargout)
+    
+    funName=char(fun);
+    if length(funName)>20
+        funName=[funName(1:min(end,17)),'...'];
+    end
+    
+    for i=1:length(callAndStoreSave_)
+        if isequal(char(fun),char(callAndStoreSave_(i).fun)) && ...
+                isequal(varargin,callAndStoreSave_(i).varargin) && ...
+                nargout==length(callAndStoreSave_(i).varargout)
         if verboseLevel>0
             fprintf('callAndStore: retrieving call to ''%s'' from stored value %d (%d retrieval)\n',...
                     funName,i,callAndStoreSave_(i).nCalls);
@@ -58,31 +58,34 @@ for i=1:length(callAndStoreSave_)
         varargout=callAndStoreSave_(i).varargout;
         callAndStoreSave_(i).nCalls=callAndStoreSave_(i).nCalls+1;
         return
+        end
+        if verboseLevel>1
+            fprintf('callAndStore: no match for stored value %d\n',i);
+            fprintf('   fun      %d: "%s" == "%s"?\n',...
+                    isequal(char(fun),char(callAndStoreSave_(i).fun)),char(fun),char(callAndStoreSave_(i).fun));
+            fprintf('   nargout  %d: %d == %d?\n',...
+                    nargout==length(callAndStoreSave_(i).varargout),nargout,length(callAndStoreSave_(i).varargout));
+            fprintf('   varargin %d:\n',isequal(varargin,callAndStoreSave_(i).varargin));
+            disp(varargin);
+            disp(callAndStoreSave_(i).varargin);
+        end
     end
-    if verboseLevel>1
-        fprintf('callAndStore: no match for stored value %d\n',i);
-        fprintf('   fun      %d: "%s" == "%s"?\n',...
-                isequal(char(fun),char(callAndStoreSave_(i).fun)),char(fun),char(callAndStoreSave_(i).fun));
-        fprintf('   nargout  %d: %d == %d?\n',...
-                nargout==length(callAndStoreSave_(i).varargout),nargout,length(callAndStoreSave_(i).varargout));
-        fprintf('   varargin %d:\n',isequal(varargin,callAndStoreSave_(i).varargin));
-        disp(varargin);
-        disp(callAndStoreSave_(i).varargin);
+    fprintf('callAndStore: calling function ''%s'' and storing results in entry %d\n',...
+            funName,length(callAndStoreSave_)+1);
+    try
+        [varargout{1:nargout}]=fun(varargin{:});
+    catch me
+        fprintf('\ncallAndStore: error in calling ''%s'' with %d arguments:\n',funName,length(varargin))
+        for i=1:length(varargin)
+            fprintf(' %d:',i);
+            disp(varargin{i})
+        end
+        rethrow(me)
     end
+    callAndStoreSave_(end+1).fun=fun;
+    callAndStoreSave_(end).varargin=varargin;
+    callAndStoreSave_(end).varargout=varargout;
+    callAndStoreSave_(end).nCalls=1;
+    
 end
-fprintf('callAndStore: calling function ''%s'' and storing results in entry %d\n',...
-        funName,length(callAndStoreSave_)+1);
-try
-    [varargout{1:nargout}]=fun(varargin{:});
-catch me
-    fprintf('\ncallAndStore: error in calling ''%s'' with %d arguments:\n',funName,length(varargin))
-    for i=1:length(varargin)
-        fprintf(' %d:',i);
-        disp(varargin{i})
-    end
-    rethrow(me)
-end
-callAndStoreSave_(end+1).fun=fun;
-callAndStoreSave_(end).varargin=varargin;
-callAndStoreSave_(end).varargout=varargout;
-callAndStoreSave_(end).nCalls=1;
+

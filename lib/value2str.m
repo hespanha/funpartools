@@ -4,23 +4,10 @@ function str=value2str(value)
 %   Returns a character string with a value, regardless of whether the
 %   value is numeric or a string
 %
-%
-% Copyright 2012-2017 Joao Hespanha
-
 % This file is part of Tencalc.
 %
-% TensCalc is free software: you can redistribute it and/or modify it
-% under the terms of the GNU General Public License as published by the
-% Free Software Foundation, either version 3 of the License, or (at your
-% option) any later version.
-%
-% TensCalc is distributed in the hope that it will be useful, but
-% WITHOUT ANY WARRANTY; without even the implied warranty of
-% MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
-% General Public License for more details.
-%
-% You should have received a copy of the GNU General Public License
-% along with TensCalc.  If not, see <http://www.gnu.org/licenses/>.
+% Copyright (C) 2012-21 The Regents of the University of California
+% (author: Dr. Joao Hespanha).  All rights reserved.
 
     if isnumeric(value)
         if length(value)==0
@@ -87,3 +74,4 @@ function str=value2str(value)
         %disp(value)
         %error('value2str: does not know to convert ''%s'' to string\n',class(value))
     end
+end

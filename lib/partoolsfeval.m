@@ -1,5 +1,10 @@
 classdef partoolsfeval < handle;
 % Class to support the execution of many function evaluations in in parallel
+%
+% This file is part of Tencalc.
+%
+% Copyright (C) 2012-21 The Regents of the University of California
+% (author: Dr. Joao Hespanha).  All rights reserved.
 
     properties;
         % folder where the files associated with all the functions to be evaluated will be stored

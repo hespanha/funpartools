@@ -36,180 +36,169 @@ function archivePedigreeChildren(pedigree,archiveFolder,selectData,selectParamet
 %                         means that all parameters with non-empty
 %                         names will be included.
 %
-%
-% Copyright 2012-2017 Joao Hespanha
-
 % This file is part of Tencalc.
 %
-% TensCalc is free software: you can redistribute it and/or modify it
-% under the terms of the GNU General Public License as published by the
-% Free Software Foundation, either version 3 of the License, or (at your
-% option) any later version.
-%
-% TensCalc is distributed in the hope that it will be useful, but
-% WITHOUT ANY WARRANTY; without even the implied warranty of
-% MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
-% General Public License for more details.
-%
-% You should have received a copy of the GNU General Public License
-% along with TensCalc.  If not, see <http://www.gnu.org/licenses/>.
+% Copyright (C) 2012-21 The Regents of the University of California
+% (author: Dr. Joao Hespanha).  All rights reserved.
 
-verboseLevel=0;
-
-%% get key formating parameters for filenames
-[filename,pedigreeName,pedigreeSuffix,dateFormat,basenameUniqueRegexp,timeStampFormat,pedigreeWildcard]=createPedigree();
-
-if nargin<3
-    selectData='.+';
-end
-
-S=regexp(pedigree,'^(.*/|)([^/]+)$','tokens');
-pedigree_path=S{1}{1};
-pedigree_filename=S{1}{2};
-
-if isempty(pedigree_path)
-    pedigree_path='./';
-end
-
-fprintf('Archiving pedigree ''%s''\n',pedigree_filename);
-
-%% pedrigree and its data files
-
-if ~exist(pedigree,'file')
-    error('archivePedigreeChildren: pedigree file ''%s'' not found\n',pedigree);
-end
-
-files2move=addDataFiles(pedigreeSuffix,{},...
-                        pedigree_path,pedigree_filename);
-
-%% pedigree descendents
-fprintf('Looking for descendents in folder ''%s''\n',pedigree_path);
-% get list of pedigree files
-wildcard=sprintf(pedigreeWildcard,pedigree_path,'/*',pedigreeSuffix);
-pedigrees=dir(wildcard);
-
-for thisPedigree=1:length(pedigrees)
-    thisName=[pedigree_path,pedigrees(thisPedigree).name];
-    if verboseLevel>=2
-        fprintf('   analysing pedigree: %s\n',pedigrees(thisPedigree).name);
+    verboseLevel=0;
+    
+    %% get key formating parameters for filenames
+    [filename,pedigreeName,pedigreeSuffix,dateFormat,basenameUniqueRegexp,timeStampFormat,pedigreeWildcard]=createPedigree();
+    
+    if nargin<3
+        selectData='.+';
     end
-
-    txt=fileread(thisName);
-    found=strfind(txt,pedigree_filename);
-    if ~isempty(found)
+    
+    S=regexp(pedigree,'^(.*/|)([^/]+)$','tokens');
+    pedigree_path=S{1}{1};
+    pedigree_filename=S{1}{2};
+    
+    if isempty(pedigree_path)
+        pedigree_path='./';
+    end
+    
+    fprintf('Archiving pedigree ''%s''\n',pedigree_filename);
+    
+    %% pedrigree and its data files
+    
+    if ~exist(pedigree,'file')
+        error('archivePedigreeChildren: pedigree file ''%s'' not found\n',pedigree);
+    end
+    
+    files2move=addDataFiles(pedigreeSuffix,{},...
+                            pedigree_path,pedigree_filename);
+    
+    %% pedigree descendents
+    fprintf('Looking for descendents in folder ''%s''\n',pedigree_path);
+    % get list of pedigree files
+    wildcard=sprintf(pedigreeWildcard,pedigree_path,'/*',pedigreeSuffix);
+    pedigrees=dir(wildcard);
+    
+    for thisPedigree=1:length(pedigrees)
+        thisName=[pedigree_path,pedigrees(thisPedigree).name];
         if verboseLevel>=2
-            fprintf('\t\tfound reference!\n',pedigrees(thisPedigree).name);
+            fprintf('   analysing pedigree: %s\n',pedigrees(thisPedigree).name);
         end
-        files2move=addDataFiles(pedigreeSuffix,files2move,...
-                                pedigree_path,pedigrees(thisPedigree).name);
-    end
-end
-
-%% creating archive folder if it does not exist
-if ~exist(archiveFolder,'dir')
-    fprintf('archivePedigreeChildren: archive folder ''%s'' not found, creating it\n',archiveFolder);
-    cmd=sprintf('mkdir "%s"',archiveFolder);
-    [status,result]=system(cmd);
-    if status~=0
-        disp(cmd)
-        error('archivePedigreeChildren: mkdir failed with status %d\n\t%s\n',status,result);
-    end
-end
-
-%% copying
-if verboseLevel>=1
-    fprintf('\nArchiving files:\n');
-end
-for i=1:length(files2move)
-    if ~isempty(regexp(files2move{i},selectData))
-        filein=[pedigree_path,files2move{i}];
-        fileout=[archiveFolder,'/',files2move{i}];
-        if ~isempty(regexp(files2move{i},[basenameUniqueRegexp,pedigreeSuffix]))
-            if verboseLevel>=0
-                fprintf('   archiving pedigree  ''%s''\n',files2move{i});
+        
+        txt=fileread(thisName);
+        found=strfind(txt,pedigree_filename);
+        if ~isempty(found)
+            if verboseLevel>=2
+                fprintf('\t\tfound reference!\n',pedigrees(thisPedigree).name);
             end
-            % is pedigree
-            fin=fopen(filein,'r');
-            fout=fopen(fileout,'w');
-            if fout<0
-                error('archivePedigreeChildren: unable to create file %s\n',fileout);
-            end
-            txtout=[];
-            include=1;
-            while (1)
-                txt=fgets(fin);
-                if ~ischar(txt)
-                    break;
+            files2move=addDataFiles(pedigreeSuffix,files2move,...
+                                    pedigree_path,pedigrees(thisPedigree).name);
+        end
+    end
+    
+    %% creating archive folder if it does not exist
+    if ~exist(archiveFolder,'dir')
+        fprintf('archivePedigreeChildren: archive folder ''%s'' not found, creating it\n',archiveFolder);
+        cmd=sprintf('mkdir "%s"',archiveFolder);
+        [status,result]=system(cmd);
+        if status~=0
+            disp(cmd)
+            error('archivePedigreeChildren: mkdir failed with status %d\n\t%s\n',status,result);
+        end
+    end
+    
+    %% copying
+    if verboseLevel>=1
+        fprintf('\nArchiving files:\n');
+    end
+    for i=1:length(files2move)
+        if ~isempty(regexp(files2move{i},selectData))
+            filein=[pedigree_path,files2move{i}];
+            fileout=[archiveFolder,'/',files2move{i}];
+            if ~isempty(regexp(files2move{i},[basenameUniqueRegexp,pedigreeSuffix]))
+                if verboseLevel>=0
+                    fprintf('   archiving pedigree  ''%s''\n',files2move{i});
                 end
-                if ~isempty(regexp(txt,'^<A NAME='))
-                    % start of new file?
-                    if include
-                        fprintf(fout,'%s',txtout);
+                % is pedigree
+                fin=fopen(filein,'r');
+                fout=fopen(fileout,'w');
+                if fout<0
+                    error('archivePedigreeChildren: unable to create file %s\n',fileout);
+                end
+                txtout=[];
+                include=1;
+                while (1)
+                    txt=fgets(fin);
+                    if ~ischar(txt)
+                        break;
                     end
-                    txtout=[];
-                    include=0;
-                end
-                parname=regexp(txt,'^ *(<LI>)?<EM>([^< ]*) *</EM> = ','tokens');
-                if ~isempty(parname)
-                    % parameter name
-                    if ~isempty(regexp(parname{1}{2},selectParameters))
-                        %fprintf('\tincluding parameter %s\n',parname{1}{2});
-                        txtout=[txtout,txt];
-                        include=1;
+                    if ~isempty(regexp(txt,'^<A NAME='))
+                        % start of new file?
+                        if include
+                            fprintf(fout,'%s',txtout);
+                        end
+                        txtout=[];
+                        include=0;
+                    end
+                    parname=regexp(txt,'^ *(<LI>)?<EM>([^< ]*) *</EM> = ','tokens');
+                    if ~isempty(parname)
+                        % parameter name
+                        if ~isempty(regexp(parname{1}{2},selectParameters))
+                            %fprintf('\tincluding parameter %s\n',parname{1}{2});
+                            txtout=[txtout,txt];
+                            include=1;
+                        else
+                            %fprintf('\texcluding parameter %s\n',parname{1}{2});
+                        end
                     else
-                        %fprintf('\texcluding parameter %s\n',parname{1}{2});
+                        % other line
+                        txtout=[txtout,txt];
                     end
-                else
-                    % other line
-                    txtout=[txtout,txt];
+                end
+                if include
+                    fprintf(fout,txtout);
+                end
+                fclose(fin);
+                fclose(fout);
+            else
+                if verboseLevel>=0
+                    fprintf('   archiving data file ''%s''\n',files2move{i});
+                end
+                % is data file
+                cmd=sprintf('cp -nv "%s" "%s"',filein,fileout);
+                [status,result]=system(cmd);
+                if status~=0
+                    disp(cmd)
+                    error('archivePedigreeChildren: cp failed with status %d\n\t%s\n',status,result);
                 end
             end
-            if include
-                fprintf(fout,txtout);
-            end
-            fclose(fin);
-            fclose(fout);
         else
-            if verboseLevel>=0
-                fprintf('   archiving data file ''%s''\n',files2move{i});
-            end
-            % is data file
-            cmd=sprintf('cp -nv "%s" "%s"',filein,fileout);
-            [status,result]=system(cmd);
-            if status~=0
-                disp(cmd)
-                error('archivePedigreeChildren: cp failed with status %d\n\t%s\n',status,result);
-            end
+            %        fprintf('   not archiving ''%s''\n',files2move{i});
         end
-    else
-        %        fprintf('   not archiving ''%s''\n',files2move{i});
     end
-end
-
-fprintf('   done!\n');
-
-function files2move=addDataFiles(pedigreeSuffix,files2move,pedigree_path,pedigree_filename)
-
-verboseLevel=0;
-
-%% add pedigree itself
-files2move(end+1)={pedigree_filename};
-
-if verboseLevel>0
-        fprintf('Looking for data of ''%s''\n',pedigree_filename);
-end
-
-%% add data files
-thisWildcard=regexprep(pedigree_filename,[pedigreeSuffix,'$'],'*');
-matchFiles=dir([pedigree_path,thisWildcard]);
-for i=1:length(matchFiles)
-    thisName=[pedigree_path,matchFiles(i).name];
-    if strcmp(matchFiles(i).name,pedigree_filename)
-        %            fprintf('   same (ignored)\n');
-        continue;
+    
+    fprintf('   done!\n');
+    
+    function files2move=addDataFiles(pedigreeSuffix,files2move,pedigree_path,pedigree_filename)
+        
+        verboseLevel=0;
+        
+        %% add pedigree itself
+        files2move(end+1)={pedigree_filename};
+        
+        if verboseLevel>0
+            fprintf('Looking for data of ''%s''\n',pedigree_filename);
+        end
+        
+        %% add data files
+        thisWildcard=regexprep(pedigree_filename,[pedigreeSuffix,'$'],'*');
+        matchFiles=dir([pedigree_path,thisWildcard]);
+        for i=1:length(matchFiles)
+            thisName=[pedigree_path,matchFiles(i).name];
+            if strcmp(matchFiles(i).name,pedigree_filename)
+                %            fprintf('   same (ignored)\n');
+                continue;
+            end
+            if verboseLevel>0
+                fprintf('         data file: ''%s''\n',matchFiles(i).name)
+            end
+            files2move(end+1)={matchFiles(i).name};
+        end
     end
-    if verboseLevel>0
-        fprintf('         data file: ''%s''\n',matchFiles(i).name)
-    end
-    files2move(end+1)={matchFiles(i).name};
 end

@@ -1,3 +1,8 @@
+% This file is part of Tencalc.
+%
+% Copyright (C) 2012-21 The Regents of the University of California
+% (author: Dr. Joao Hespanha).  All rights reserved.
+
 !cleantmp
 
 folder='hespanha@ssh-iam.intel-research.net:systemid/matlab/tmp_tasks'; 

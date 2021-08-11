@@ -5,6 +5,11 @@ function finalizePedigree(pedigreeName,pedigreeNameMat)
 %
 % temporary=true;
 % [filename,pedigreeName,pedigreeNameMat]=createPedigree(fileClass,parameters,caller,temporary)
+%
+% This file is part of Tencalc.
+%
+% Copyright (C) 2012-21 The Regents of the University of California
+% (author: Dr. Joao Hespanha).  All rights reserved.
 
     old=[pedigreeNameMat,'~'];
     [success,message]=movefile(old,pedigreeNameMat);

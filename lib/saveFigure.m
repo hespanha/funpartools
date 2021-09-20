@@ -192,7 +192,8 @@ function varargout=saveFigure(varargin);
         if figureNumber(i)==0
             figureNumber(i)=gcf;
         else
-            figure(figureNumber(i));
+            set(groot,'currentfigure',figureNumber(i)); % avoid pushing to front
+            %figure(figureNumber(i));
         end
 
         % for debug

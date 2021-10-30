@@ -79,6 +79,17 @@ function varargout=clearFigure(varargin);
             'by the print command.'
                        });
 
+    declareParameter(...
+        'VariableName','docked',...
+        'AdmissibleValues',{'yes','no','nochange'},...
+        'DefaultValue','nochange',...
+        'Description', {
+                         'Determines window style:';
+                         '  yes - set widow style to docked';
+                         '  no - set widow style to normal';
+                         '  nochange - do not change window style';
+                       });
+
     % Changed 'Renderer','opengl' to 'RendererMode','auto' on 5/18/2014 to
     % avoid problems with logscale
 
@@ -167,6 +178,14 @@ function varargout=clearFigure(varargin);
            ...%'position';figPosition;
           };
 
+    % docked?
+    switch (docked)
+      case 'yes'
+        set(figureNumber,'WindowStyle','docked');
+      case 'no'
+        set(figureNumber,'WindowStyle','normal');
+    end
+    
     % prevent warning from docked window
     s=warning('off','MATLAB:Figure:SetPosition');
     set(figureNumber,props{:},'color','w')

@@ -18,23 +18,27 @@ function rgb2cm()
 % Joao Hespanha: Turned into function, Oct 2012
 % Joao Hespanha: Used "unique" to minimize size of colormap, Nov 2013
 
-patches = findall(gcf,'Type','patch') ;
-
-cm = colormap ;
-for i=1:numel(patches)
-    set(patches(i),'CDataMapping','direct')
-    c = get(patches(i),'FaceColor') ;
-    if strcmpi('flat',c)
-        c = get(patches(i),'FaceVertexCData') ;
-        if size(c,2)>1
-            [c,~,ic]=unique(c,'rows');
-            ic=size(cm,1)+ic;
-            cm = [cm; c] ;
-            n = size(c,1) ;
-            set(patches(i),'FaceVertexCData',ic)
+%warning('not running rgb2cm');return
+    
+    patches = findall(gcf,'Type','patch') ;
+    
+    cm = colormap ;
+    for i=1:numel(patches)
+        set(patches(i),'CDataMapping','direct')
+        c = get(patches(i),'FaceColor') ;
+        if strcmpi('flat',c)
+            c = get(patches(i),'FaceVertexCData') ;
+            if size(c,2)>1
+                [c,~,ic]=unique(c,'rows');
+                ic=size(cm,1)+ic;
+                cm = [cm; c] ;
+                n = size(c,1) ;
+                set(patches(i),'FaceVertexCData',ic)
+            end
         end
     end
-end
+    
+    colormap(cm);
 
-colormap(cm);
+end
 

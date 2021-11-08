@@ -80,7 +80,7 @@ function varargout=saveFigure(varargin);
     declareParameter(...
         'VariableName','renderer',...
         'AdmissibleValues',{'auto','painters','opengl'},...
-        'DefaultValue','auto',...
+        'DefaultValue','painters',...
         'Description', {
             'Algorithm used to render the image for screen and printer.';
             '  painter - fully respects sort order, but slow on images with many objects';
@@ -217,8 +217,8 @@ function varargout=saveFigure(varargin);
         end
 
         if any(ismember({'fig','all'},saveFormat))
-            drawnow
-            rgb2cm(); % to enable painters mode
+            %drawnow
+            %rgb2cm(); % to enable painters mode
 
             nameext=[thisname,'.fig'];
             fprintf('saving %d as .fig ''%s''...',figureNumber(i),nameext);t0=clock;
@@ -227,8 +227,8 @@ function varargout=saveFigure(varargin);
         end
 
         if any(ismember({'fig6','all'},saveFormat))
-            drawnow
-            rgb2cm(); % to enable painters mode
+            %drawnow
+            %rgb2cm(); % to enable painters mode
 
             nameext=[thisname,'.fig'];
             fprintf('saving %d as .fig (-v6) ''%s''...',figureNumber(i),nameext);t0=clock;
@@ -238,7 +238,7 @@ function varargout=saveFigure(varargin);
 
         %% Raster formats
         if any(ismember({'png','all'},saveFormat))
-            drawnow
+            %drawnow
 
             nameext=[thisname,'.png'];
             fprintf('saving %d as .png ''%s''...',figureNumber(i),nameext);t0=clock;
@@ -251,7 +251,7 @@ function varargout=saveFigure(varargin);
         end
 
         if any(ismember({'jpeg','all'},saveFormat))
-            drawnow
+            %drawnow
 
             nameext=[thisname,'.jpeg'];
             fprintf('saving %d as .jpeg ''%s''...',figureNumber(i),nameext);t0=clock;
@@ -264,7 +264,7 @@ function varargout=saveFigure(varargin);
         end
 
         if any(ismember({'tiff','all'},saveFormat))
-            drawnow
+            %drawnow
 
             nameext=[thisname,'.tif'];
             fprintf('saving %d as .tif ''%s''...',figureNumber(i),nameext);t0=clock;
@@ -284,8 +284,8 @@ function varargout=saveFigure(varargin);
 
         %% Vector formats
         if any(ismember({'pdf','all'},saveFormat))
-            drawnow
-            rgb2cm(); % to enable painters mode
+            %drawnow
+            %rgb2cm(); % to enable painters mode
 
             nameext=[thisname,'.pdf'];
             fprintf('saving %d as .pdf ''%s''...',figureNumber(i),nameext);t0=clock;
@@ -305,8 +305,8 @@ function varargout=saveFigure(varargin);
         end
 
         if any(ismember({'eps','all'},saveFormat))
-            drawnow
-            rgb2cm(); % to enable painters mode
+            %drawnow
+            %rgb2cm(); % to enable painters mode
 
             nameext=[thisname,'.eps'];
             fprintf('saving %d as .eps ''%s''...',figureNumber(i),nameext);t0=clock;
@@ -325,8 +325,8 @@ function varargout=saveFigure(varargin);
         end
 
         if any(ismember({'svg','all'},saveFormat))
-            drawnow
-            rgb2cm(); % to enable painters mode
+            %drawnow
+            %rgb2cm(); % to enable painters mode
 
             nameext=[thisname,'.svg'];
             fprintf('saving %d as .svg ''%s''...',figureNumber(i),nameext);t0=clock;

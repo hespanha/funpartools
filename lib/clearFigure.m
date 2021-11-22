@@ -84,11 +84,23 @@ function varargout=clearFigure(varargin);
         'AdmissibleValues',{'yes','no','nochange'},...
         'DefaultValue','nochange',...
         'Description', {
-                         'Determines window style:';
-                         '  yes - set widow style to docked';
-                         '  no - set widow style to normal';
-                         '  nochange - do not change window style';
+            'Determines window style:';
+            '  yes - set window style to docked';
+            '  no - set window style to normal';
+            '  nochange - do not change window style';
                        });
+    
+    declareParameter(...
+        'VariableName','closeable',...
+        'AdmissibleValues',{'yes','no','nochange'},...
+        'DefaultValue','nochange',...
+        'Description', {
+            'Determines whether window can be closed:';
+            '  yes - window can be closed';
+            '  no - window cannot closed';
+            '  nochange - do not change whether window can be closed';
+                       });
+    
 
     % Changed 'Renderer','opengl' to 'RendererMode','auto' on 5/18/2014 to
     % avoid problems with logscale
@@ -178,12 +190,20 @@ function varargout=clearFigure(varargin);
            ...%'position';figPosition;
           };
 
-    % docked?
+    %% docked?
     switch (docked)
       case 'yes'
         set(figureNumber,'WindowStyle','docked');
       case 'no'
         set(figureNumber,'WindowStyle','normal');
+    end
+    
+    %% closeable?
+    switch (closeable)
+      case 'yes'
+        set(figureNumber,'CloseRequestFcn','closereq');
+      case 'no'
+        set(figureNumber,'CloseRequestFcn','');
     end
     
     % prevent warning from docked window

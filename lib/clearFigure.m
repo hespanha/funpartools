@@ -144,19 +144,21 @@ function varargout=clearFigure(varargin);
     %% reseting to default seems to be problematic if this would cause
     %% figures to become larger than the screen
 
-    %% Make sure paper size will fit in the physical screen
-    monitor=get(0,'MonitorPositions');
-    screenDPI=get(0,'ScreenPixelsPerInch');
-    monitorUsefulPixels=.9*monitor(3:4);
-    monitorUsefulInches=monitorUsefulPixels/screenDPI;
-    scale=max(paperSize./monitorUsefulInches);
-    if scale>1
-        newScreenDPI=screenDPI/scale;
-        fprintf('clearFigure: changing ''ScreenPixelsPerInch'' from %g to %g for paper to fit\n',...
-                screenDPI,newScreenDPI);
-        set(0,'ScreenPixelsPerInch',newScreenDPI);
+    if false % Setting DPI stopped being supported in 2015a
+        % Make sure paper size will fit in the physical screen
+        monitor=get(0,'MonitorPositions');
+        screenDPI=get(0,'ScreenPixelsPerInch');
+        monitorUsefulPixels=.9*monitor(3:4);
+        monitorUsefulInches=monitorUsefulPixels/screenDPI;
+        scale=max(paperSize./monitorUsefulInches);
+        if scale>1
+            newScreenDPI=screenDPI/scale;
+            fprintf('clearFigure: changing ''ScreenPixelsPerInch'' from %g to %g for paper to fit\n',...
+                    screenDPI,newScreenDPI);
+            set(0,'ScreenPixelsPerInch',newScreenDPI);
+        end
     end
-
+    
     %% Create figure
 
     if figureNumber>0

@@ -89,7 +89,7 @@ function varargout=clearFigure(varargin);
             '  no - set window style to normal';
             '  nochange - do not change window style';
                        });
-    
+
     declareParameter(...
         'VariableName','closeable',...
         'AdmissibleValues',{'yes','no','nochange'},...
@@ -100,7 +100,7 @@ function varargout=clearFigure(varargin);
             '  no - window cannot closed';
             '  nochange - do not change whether window can be closed';
                        });
-    
+
 
     % Changed 'Renderer','opengl' to 'RendererMode','auto' on 5/18/2014 to
     % avoid problems with logscale
@@ -158,7 +158,7 @@ function varargout=clearFigure(varargin);
             set(0,'ScreenPixelsPerInch',newScreenDPI);
         end
     end
-    
+
     %% Create figure
 
     if figureNumber>0
@@ -195,11 +195,15 @@ function varargout=clearFigure(varargin);
     %% docked?
     switch (docked)
       case 'yes'
-        set(figureNumber,'WindowStyle','docked');
+        try 
+            set(figureNumber,'WindowStyle','docked');
+        catch me
+            warning('clearFigure: unable to dock windows %d\n',figureNumber);
+        end
       case 'no'
         set(figureNumber,'WindowStyle','normal');
     end
-    
+
     %% closeable?
     switch (closeable)
       case 'yes'
@@ -207,7 +211,7 @@ function varargout=clearFigure(varargin);
       case 'no'
         set(figureNumber,'CloseRequestFcn','');
     end
-    
+
     % prevent warning from docked window
     s=warning('off','MATLAB:Figure:SetPosition');
     set(figureNumber,props{:},'color','w')

@@ -1,4 +1,4 @@
-function s1=mergestruct(s1,s2)
+function s1=mergestruct(s1,s2,replaceExisting)
 % Merges two structures
 %
 %   mergestruct(s1,s2) returns a structure with the all the fields of
@@ -10,6 +10,9 @@ function s1=mergestruct(s1,s2)
 % Copyright (C) 2012-21 The Regents of the University of California
 % (author: Dr. Joao Hespanha).  All rights reserved.
 
+    if nargin<3
+        replaceExisting=false;
+    end
     if length(s1)>1
         error('mergestruct: 1st structure is an array');
     end
@@ -18,7 +21,7 @@ function s1=mergestruct(s1,s2)
     end
     fns=fieldnames(s2);
     for i=1:length(fns)
-        if isfield(s1,fns{i})
+        if isfield(s1,fns{i}) && ~replaceExisting
             error('mergestruct: field ''%s'' exists in both structures\n',fns{i});
         end
         s1.(fns{i})=s2.(fns{i});

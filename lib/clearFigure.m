@@ -22,7 +22,7 @@ function varargout=clearFigure(varargin);
         'AdmissibleValues',{'landscape','portrait'},...
         'DefaultValue','landscape',...
         'Description', {
-            'Size of the '
+            'Paper orientation.'
                        });
 
     declareParameter(...
@@ -172,22 +172,23 @@ function varargout=clearFigure(varargin);
         figureNumber=gcf.Number;
     end
 
+    clf(figureNumber,'reset'); % resets everything except Position, Units, PaperPosition, and PaperUnits properties
+    zoom reset;
+    zoom off
+
     if ~isempty(figureName)
         set(figureNumber,'name',figureName);
     end
 
-    zoom reset;
-    zoom off
-    clf
-
     props={;
-    % paper size/position options
-           'paperunits';'inches';
-           'paperorientation';'portrait'; % so that no rotation is needed
-           'papersize';paperSize;
-           ...%'paperposition';[0,0,paperSize]; % but dimensions are letter landscape
-           ...%'PaperPositionMode';'auto';
-              % screen size/position options
+         % paper size/position options
+           'paperUnits';'inches';
+           'paperOrientation';'portrait'; % so that no rotation is needed
+           'paperSize';paperSize;
+           ...%'paperPosition';[0,0,paperSize]; % used to be commented before 3/28/2022
+           ...%'PaperPositionMode';'manual';    % used to be commented before 3/28/2022
+           'PaperPositionMode';'auto';
+         % screen size/position options
            'units';'inches';
            ...%'position';figPosition;
           };

@@ -1,9 +1,19 @@
 function s1=mergestruct(s1,s2,replaceExisting)
-% Merges two structures
+% Merges two structures:
 %
-%   mergestruct(s1,s2) returns a structure with the all the fields of
-%   structure s1 and s2. The two structures s1 and s2 cannot be arrays
-%   of structures and cannot have fields with the same names.
+%  
+%  mergestruct(s1,s2):
+%
+%    returns a structure with the all the fields of structure s1 and
+%    s2. The two structures s1 and s2 cannot be arrays of structures
+%    and cannot have fields with the same names.
+%
+%  mergestruct(s1,s2,replaceExisting):
+%    
+%    same as before, but when `replaceExisting=true` if the two
+%    structures have the same field, the value in `s2` is used (and
+%    the value in `s1` is discarded).
+%  
 %
 % This file is part of Tencalc.
 %

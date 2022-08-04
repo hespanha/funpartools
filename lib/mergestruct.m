@@ -23,17 +23,31 @@ function s1=mergestruct(s1,s2,replaceExisting)
     if nargin<3
         replaceExisting=false;
     end
-    if length(s1)>1
-        error('mergestruct: 1st structure is an array');
-    end
-    if length(s2)>1
-        error('mergestruct: 2nd structure is an array');
-    end
-    fns=fieldnames(s2);
-    for i=1:length(fns)
-        if isfield(s1,fns{i}) && ~replaceExisting
-            error('mergestruct: field ''%s'' exists in both structures\n',fns{i});
+    if numel(s1)==1 && numel(s2)==1
+        fns=fieldnames(s2);
+        for i=1:length(fns)
+            if isfield(s1,fns{i}) && ~replaceExisting
+                error('mergestruct: field ''%s'' exists in both structures\n',fns{i});
+            end
+            s1.(fns{i})=s2.(fns{i});
         end
-        s1.(fns{i})=s2.(fns{i});
+    elseif isequal(size(s1),size(s2))
+        if replaceExisting
+            error('mergestruct: replaceExisting=true not supported for structure arrays');
+        end
+        fn1=fields(s1);
+        c1=struct2cell(s1);
+        fn2=fields(s2);
+        c2=struct2cell(s2);
+        fn=[fn1;fn2];
+        c=cat(1,c1,c2);
+        s1=cell2struct(c,fn,1);
+    else
+        if length(s1)>1
+            error('mergestruct: 1st structure is an array');
+        end
+        if length(s2)>1
+            error('mergestruct: 2nd structure is an array');
+        end
     end
 end

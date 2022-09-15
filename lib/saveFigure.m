@@ -351,10 +351,13 @@ function varargout=saveFigure(varargin);
 end
 
 function oldSize=resizeFontSize(fig,scale)
-    h=findobj(fig,'-property','fontsize');
-    for i=1:length(h)
-        oldSize=get(h(i),'FontSize');
-        set(h(i),'FontSize',scale*oldSize);
+    props={'FontSize';'EdgeFontSize';'NodeFontSize'};
+    for j=1:numel(props)
+        h=findobj(fig,'-property',props{j});
+        for i=1:length(h)
+            oldSize=get(h(i),props{j});
+            set(h(i),props{j},scale*oldSize);
+        end
     end
 end
 

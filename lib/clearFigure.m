@@ -187,7 +187,7 @@ function varargout=clearFigure(varargin);
            'paperSize';paperSize;
            ...%'paperPosition';[0,0,paperSize]; % used to be commented before 3/28/2022
            ...%'PaperPositionMode';'manual';    % used to be commented before 3/28/2022
-           'PaperPositionMode';'auto';
+           'PaperPositionMode';'auto'; % preserve figures dimensions on the screen
          % screen size/position options
            'units';'inches';
            ...%'position';figPosition;

@@ -32,6 +32,7 @@ function varargout=clearFigure(varargin);
             'Size of the figure with respect to the US letter:'
             '   1 corresponds to the US letter size'
             '   x corresponds to x times the US letter size';
+            '   [x,y] corresponds to [x,y] .* the US letter size';
             'ATTENTION: it seems that for sizes different than 1';
             '           the fontsizes are adjusted before printing';
             '           (enlarged for larger paper sizes)'
@@ -132,12 +133,11 @@ function varargout=clearFigure(varargin);
 
     switch orientation
       case 'landscape'
-        figPosition=[1,8.5,paperSize*[11,8.5]];
-        paperSize=paperSize*[11 8.5];
+        paperSize=paperSize(:)'.*[11 8.5];
       case 'portrait'
-        figPosition=[1,11,paperSize*[8.5,11]];
-        paperSize=paperSize*[8.5 11];
+        paperSize=paperSize(:)'.*[8.5 11];
     end
+    figPosition=[1,paperSize(2),paperSize];
 
     %% Reset Screen DPI to default 72dpi
     %set(0,'ScreenPixelsPerInch',72);
@@ -185,10 +185,10 @@ function varargout=clearFigure(varargin);
            'paperUnits';'inches';
            'paperOrientation';'portrait'; % so that no rotation is needed
            'paperSize';paperSize;
-           ...%'paperPosition';[0,0,paperSize]; % used to be commented before 3/28/2022
-           ...%'PaperPositionMode';'manual';    % used to be commented before 3/28/2022
-           'PaperPositionMode';'auto'; % preserve figures dimensions on the screen
-         % screen size/position options
+           'paperPosition';[0,0,paperSize];
+           'paperPositionMode';'manual'; 
+           ...%'PaperPositionMode';'auto'; % preserve figures dimensions on the screen
+           % screen size/position options
            'units';'inches';
            ...%'position';figPosition;
           };
